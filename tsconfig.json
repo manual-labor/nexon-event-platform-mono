@@ -4,10 +4,13 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/nexon-event-platform-mono-e2e"
+      "path": "./apps/auth"
     },
     {
-      "path": "./apps/nexon-event-platform-mono"
+      "path": "./apps/event"
+    },
+    {
+      "path": "./apps/gateway"
     }
   ]
 }
