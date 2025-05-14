@@ -1,0 +1,46 @@
+{
+  "name": "@nexon-event-platform-mono/nexon-event-platform-mono",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "name": "nexon-event-platform-mono",
+    "targets": {
+      "build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "webpack-cli build",
+          "args": [
+            "node-env=production"
+          ]
+        },
+        "configurations": {
+          "development": {
+            "args": [
+              "node-env=development"
+            ]
+          }
+        }
+      },
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "nexon-event-platform-mono:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "nexon-event-platform-mono:build:development"
+          },
+          "production": {
+            "buildTarget": "nexon-event-platform-mono:build:production"
+          }
+        }
+      }
+    }
+  }
+}
