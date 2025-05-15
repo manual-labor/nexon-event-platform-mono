@@ -2,7 +2,20 @@
   "name": "@nexon-event-platform-mono/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "start": "nx serve",
+    "start:auth": "nx serve auth",
+    "start:event": "nx serve event",
+    "start:gateway": "nx serve gateway",
+    "build": "nx build",
+    "build:auth": "nx build auth",
+    "build:event": "nx build event",
+    "build:gateway": "nx build gateway",
+    "lint": "nx lint",
+    "lint:auth": "nx lint auth",
+    "lint:event": "nx lint event",
+    "lint:gateway": "nx lint gateway"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^10.0.2",
