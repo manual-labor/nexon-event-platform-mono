@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  auth:
+    build:
+      context: .
+      dockerfile: apps/auth/Dockerfile
+      platforms:
+        - linux/arm64
+    image: nexon-event-platform/auth:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/authdb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+
+  event:
+    build:
+      context: .
+      dockerfile: apps/event/Dockerfile
+      platforms:
+        - linux/arm64
+    image: nexon-event-platform/event:latest
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/eventdb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+      platforms:
+        - linux/arm64
+    image: nexon-event-platform/gateway:latest
+    ports:
+      - "3002:3002"
+    depends_on:
+      - auth
+      - event
+
+  mongo:
+    image: mongo:6.0
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+volumes:
+  mongo-data:
+  
