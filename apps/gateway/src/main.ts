@@ -1,35 +1,36 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app/app.module';
+import { ConfigService } from '@nestjs/config';
+import { GlobalExceptionFilter } from './app/filters/global-exception.filter';
 
-class Application {
-  private readonly logger = new Logger(Application.name);
-
-  constructor(private readonly configService: ConfigService) { }
-
-  async bootstrap(app): Promise<void> {
-    const globalPrefix = 'api';
-    app.setGlobalPrefix(globalPrefix);
-
-    const port = this.configService.get<number>('PORT', 3002);
-    await app.listen(port);
-
-    this.logger.log(
-      `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
-    );
-  }
-}
-
-async function main() {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-
-  const application = new Application(configService);
-  await application.bootstrap(app);
+  
+  app.enableCors();
+  const globalPrefix = 'api';
+  app.setGlobalPrefix(globalPrefix);
+  
+  app.useGlobalFilters(new GlobalExceptionFilter());
+  
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+  
+  const port = configService.get('PORT', 3000);
+  await app.listen(port);
+  
+  Logger.log(
+    `🚀 Gateway 서버가 http://localhost:${port}/${globalPrefix} 에서 실행 중입니다`
+  );
 }
 
-main().catch((err) => {
-  console.error('Error during bootstrap:', err);
-  process.exit(1);
-});
+bootstrap();
