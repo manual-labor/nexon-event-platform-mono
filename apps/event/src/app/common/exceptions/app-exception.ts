@@ -1,0 +1,102 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { ErrorCode } from '../constants/error-codes';
+
+/**
+ * 에러 응답의 표준 인터페이스
+ */
+export interface ErrorResponse {
+  status: number;
+  message: string;
+  errorCode: ErrorCode;
+  error?: string;
+  timestamp?: string;
+  path?: string;
+  details?: Record<string, any>;
+}
+
+/**
+ * 애플리케이션 전체에서 사용할 커스텀 예외 클래스
+ */
+export class AppException extends HttpException {
+  private readonly errorResponse: ErrorResponse;
+
+  constructor(
+    errorCode: ErrorCode,
+    message: string,
+    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
+    details?: Record<string, any>
+  ) {
+    const errorResponse: ErrorResponse = {
+      status: statusCode,
+      message,
+      errorCode,
+      timestamp: new Date().toISOString(),
+      details,
+    };
+    
+    super(errorResponse, statusCode);
+    this.errorResponse = errorResponse;
+  }
+
+  getErrorResponse(): ErrorResponse {
+    return this.errorResponse;
+  }
+
+  getErrorCode(): ErrorCode {
+    return this.errorResponse.errorCode;
+  }
+}
+
+/**
+ * 이벤트를 찾을 수 없을 때 발생하는 예외
+ */
+export class EventNotFoundException extends AppException {
+  constructor(message = '이벤트를 찾을 수 없습니다', details?: Record<string, any>) {
+    super('EVENT_NOT_FOUND', message, HttpStatus.NOT_FOUND, details);
+  }
+}
+
+/**
+ * 보상을 이미 받았을 때 발생하는 예외
+ */
+export class RewardAlreadyClaimedException extends AppException {
+  constructor(message = '이미 보상을 받았습니다', details?: Record<string, any>) {
+    super('REWARD_ALREADY_CLAIMED', message, HttpStatus.BAD_REQUEST, details);
+  }
+}
+
+/**
+ * 이벤트가 활성 상태가 아닐 때 발생하는 예외
+ */
+export class EventInactiveException extends AppException {
+  constructor(message = '진행 중인 이벤트가 아닙니다', details?: Record<string, any>) {
+    super('EVENT_INACTIVE', message, HttpStatus.BAD_REQUEST, details);
+  }
+}
+
+/**
+ * 이벤트 기간이 아닐 때 발생하는 예외
+ */
+export class EventPeriodException extends AppException {
+  constructor(message = '이벤트 기간이 아닙니다', details?: Record<string, any>) {
+    super('EVENT_EXPIRED', message, HttpStatus.BAD_REQUEST, details);
+  }
+}
+
+/**
+ * 보상이 없을 때 발생하는 예외
+ */
+export class NoRewardsAvailableException extends AppException {
+  constructor(message = '이벤트에 등록된 보상이 없습니다', details?: Record<string, any>) {
+    super('NO_REWARDS_AVAILABLE', message, HttpStatus.BAD_REQUEST, details);
+  }
+}
+
+/**
+ * 보상 수량이 모두 소진되었을 때 발생하는 예외
+ */
+export class RewardQuantityExhaustedException extends AppException {
+  constructor(message = '보상 수량이 모두 소진되었습니다', details?: Record<string, any>) {
+    super('REWARD_QUANTITY_EXHAUSTED', message, HttpStatus.BAD_REQUEST, details);
+  }
+} 

@@ -1,36 +1,33 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app/app.module';
+import { GlobalExceptionFilter } from './app/filters/global-exception.filter';
 
-class Application {
-  private readonly logger = new Logger(Application.name);
-
-  constructor(private readonly configService: ConfigService) { }
-
-  async bootstrap(app): Promise<void> {
-    const globalPrefix = 'api';
-    app.setGlobalPrefix(globalPrefix);
-
-    const port = this.configService.get<number>('PORT', 3001);
-    await app.listen(port);
-
-    this.logger.log(
-      `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
-    );
-  }
-}
-
-async function main() {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  const application = new Application(configService);
-  await application.bootstrap(app);
+  const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.TCP,
+      options: {
+        host: configService.get('EVENT_SERVICE_HOST', 'localhost'),
+        port: configService.get('EVENT_SERVICE_PORT', 3002),
+      },
+    },
+  );
+  
+  // 글로벌 예외 필터 적용
+  microservice.useGlobalFilters(new GlobalExceptionFilter());
+  
+  await microservice.listen();
+  Logger.log(
+    `🚀 Event 마이크로서비스가 ${configService.get('EVENT_SERVICE_HOST', 'localhost')}:${configService.get('EVENT_SERVICE_PORT', 3002)}에서 실행 중입니다`
+  );
 }
 
-main().catch((err) => {
-  console.error('Error during bootstrap:', err);
-  process.exit(1);
-});
+bootstrap();
 
