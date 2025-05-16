@@ -1,0 +1,51 @@
+/**
+ * 애플리케이션 에러 코드 정의
+ * 카테고리별로 구분하여 관리
+ */
+
+// 일반 오류 (1000~1999)
+export const GENERAL_ERROR_CODES = {
+  UNKNOWN_ERROR: 'E1000',
+  VALIDATION_FAILED: 'E1001',
+  UNAUTHORIZED: 'E1002',
+  FORBIDDEN: 'E1003',
+  NOT_FOUND: 'E1004',
+  INTERNAL_SERVER_ERROR: 'E1005',
+};
+
+// 이벤트 관련 오류 (2000~2999)
+export const EVENT_ERROR_CODES = {
+  EVENT_NOT_FOUND: 'E2000',
+  EVENT_INACTIVE: 'E2001',
+  EVENT_EXPIRED: 'E2002',
+  EVENT_NOT_STARTED: 'E2003',
+  EVENT_ALREADY_ENDED: 'E2004',
+};
+
+// 보상 관련 오류 (3000~3999)
+export const REWARD_ERROR_CODES = {
+  REWARD_NOT_FOUND: 'E3000',
+  REWARD_ALREADY_CLAIMED: 'E3001',
+  NO_REWARDS_AVAILABLE: 'E3002',
+  REWARD_CLAIM_FAILED: 'E3003',
+  REWARD_QUANTITY_EXHAUSTED: 'E3004',
+};
+
+// 사용자 관련 오류 (4000~4999)
+export const USER_ERROR_CODES = {
+  USER_NOT_FOUND: 'E4000',
+  INVALID_CREDENTIALS: 'E4001',
+  PASSWORD_REQUIRED: 'E4002',
+  EMAIL_ALREADY_EXISTS: 'E4003',
+};
+
+// 모든 에러 코드를 하나의 객체로 통합
+export const ERROR_CODES = {
+  ...GENERAL_ERROR_CODES,
+  ...EVENT_ERROR_CODES,
+  ...REWARD_ERROR_CODES,
+  ...USER_ERROR_CODES,
+};
+
+// 에러 코드 타입 정의
+export type ErrorCode = keyof typeof ERROR_CODES; 
