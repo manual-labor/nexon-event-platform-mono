@@ -1,6 +1,7 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDate, IsArray, IsMongoId, ValidateNested, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { EventStatus, EventConditionType } from '../schemas/event.schema';
+import { TransformDate } from '../../common/decorators/type.decorator';
 
 export class EventConditionDto {
   @IsEnum(EventConditionType)
@@ -30,13 +31,13 @@ export class CreateEventDto {
   status!: EventStatus;
 
   @IsDate()
-  @Type(() => Date)
   @IsNotEmpty()
+  @TransformDate()
   startDate!: Date;
 
   @IsDate()
-  @Type(() => Date)
   @IsNotEmpty()
+  @TransformDate()
   endDate!: Date;
 
   @IsArray()
@@ -60,12 +61,12 @@ export class UpdateEventDto {
   status?: EventStatus;
 
   @IsDate()
-  @Type(() => Date)
+  @TransformDate()
   @IsOptional()
   startDate?: Date;
 
   @IsDate()
-  @Type(() => Date)
+  @TransformDate()
   @IsOptional()
   endDate?: Date;
 

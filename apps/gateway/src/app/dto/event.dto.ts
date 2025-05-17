@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, IsBoolean, IsDateString, IsArray, IsEnum, IsObject, ValidateNested, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsBoolean, IsDateString, IsArray, IsEnum, IsObject, ValidateNested, IsNumber, IsDate } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class RewardDto {
@@ -40,13 +40,15 @@ export class EventDto {
   @IsNotEmpty()
   description!: string;
 
-  @IsDateString()
+  @IsDate()
+  @Type(() => Date)
   @IsNotEmpty()
-  startDate!: string;
+  startDate!: Date;
 
-  @IsDateString()
+  @IsDate()
+  @Type(() => Date)
   @IsNotEmpty()
-  endDate!: string;
+  endDate!: Date;
 
   @IsString()
   @IsOptional()

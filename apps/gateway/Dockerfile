@@ -17,6 +17,9 @@ WORKDIR /app
 
 COPY --from=builder /workspace/apps/gateway/dist ./
 COPY --from=builder /workspace/node_modules ./node_modules
+# Proto 파일 복사
+COPY --from=builder /workspace/apps/auth/src/proto/ ./proto/
+COPY --from=builder /workspace/apps/event/src/proto/ ./proto/
 
 ENV NODE_ENV=production
 

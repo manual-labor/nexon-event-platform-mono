@@ -394,15 +394,10 @@ export class EventsService {
   }
 
   private getEventStatusFromDates(startDate: Date, endDate: Date): EventStatus {
-    const nowTime: number = new Date().getTime();
-      if(endDate.getTime() >= nowTime) {
-        return EventStatus.ENDED;
-      }
-
-      if(startDate.getTime() >= nowTime && nowTime <= endDate.getTime()) {
-        return EventStatus.ONGOING;
-      }
-
-     return EventStatus.UPCOMING;
+    const now   = Date.now();
+  
+    if (now > endDate.getTime())   return EventStatus.ENDED;
+    if (now < startDate.getTime()) return EventStatus.UPCOMING;
+    return EventStatus.ONGOING;
   }
 }
