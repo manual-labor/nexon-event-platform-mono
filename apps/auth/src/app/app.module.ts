@@ -16,7 +16,7 @@ import { AuthModule } from './auth/auth.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        uri: configService.get('MONGODB_URI', 'mongodb://localhost:27017/auth-service'),
+        uri: configService.get('MONGODB_URI_AUTH', 'mongodb://mongo:27017/authdb?replicaSet=rs0'),
       }),
     }),
     JwtModule.registerAsync({

@@ -14,7 +14,7 @@ import { EventsModule } from './events/events.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        uri: configService.get('MONGODB_URI', 'mongodb://localhost:27017/event-service'),
+        uri: configService.get('MONGODB_URI_EVENT', 'mongodb://mongo:27017/eventdb?replicaSet=rs0'),
       }),
     }),
     EventsModule,

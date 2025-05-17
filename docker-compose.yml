@@ -1,5 +1,43 @@
 version: '3.8'
 services:
+  mongo:
+    image: mongo:6.0
+    restart: always
+    command:
+      - --replSet
+      - rs0
+      - --bind_ip_all
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: |
+        mongo --eval "db.adminCommand('ping')" --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  mongo-init:
+    image: mongo:6.0
+    depends_on:
+      - mongo
+    entrypoint: ["bash", "-c"]
+    command: |
+      # MongoDB가 기동할 때까지 대기
+      until mongo --host mongo:27017 --eval "print('ok')" --quiet; do
+        echo 'Waiting for MongoDB to be ready...';
+        sleep 2;
+      done;
+      # rs.initiate() 호출 (단일 노드)
+      mongo --host mongo:27017 --eval '
+        if (!rs.status().ok) {
+          rs.initiate({_id: "rs0", members: [{ _id: 0, host: "mongo:27017" }]});
+        }
+        printjson(rs.status());'
+    restart: 'no'
+
   auth:
     build:
       context: .
@@ -8,12 +46,17 @@ services:
         - linux/arm64
     image: nexon-event-platform/auth:latest
     ports:
-      - "3001:3001"
+      - "${AUTH_PORT:-3001}:3001"
     environment:
-      - MONGO_URL=mongodb://mongo:27017/authdb
-      - REDIS_URL=redis://redis:6379
+      - AUTH_SERVICE_HOST=auth
+      - AUTH_SERVICE_PORT=${AUTH_PORT:-3001}
+      - MONGODB_URI_AUTH=${MONGODB_URI_AUTH:-mongodb://mongo:27017/authdb?replicaSet=rs0}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - JWT_SECRET=${JWT_SECRET}
+    env_file:
+      - .env
     depends_on:
-      - mongo
+      - mongo-init
       - redis
 
   event:
@@ -24,12 +67,17 @@ services:
         - linux/arm64
     image: nexon-event-platform/event:latest
     ports:
-      - "3002:3002"
+      - "${EVENT_PORT:-3002}:3002"
     environment:
-      - MONGO_URL=mongodb://mongo:27017/eventdb
-      - REDIS_URL=redis://redis:6379
+      - EVENT_SERVICE_HOST=event
+      - EVENT_SERVICE_PORT=${EVENT_PORT:-3002}
+      - MONGODB_URI_EVENT=${MONGODB_URI_EVENT:-mongodb://mongo:27017/eventdb?replicaSet=rs0}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - JWT_SECRET=${JWT_SECRET}
+    env_file:
+      - .env
     depends_on:
-      - mongo
+      - mongo-init
       - redis
 
   gateway:
@@ -40,25 +88,25 @@ services:
         - linux/arm64
     image: nexon-event-platform/gateway:latest
     ports:
-      - "3000:3000"
+      - "${GATEWAY_PORT:-3000}:3000"
+    environment:
+      - PORT=${GATEWAY_PORT:-3000}
+      - AUTH_SERVICE_HOST=auth
+      - AUTH_SERVICE_PORT=${AUTH_PORT:-3001}
+      - EVENT_SERVICE_HOST=event
+      - EVENT_SERVICE_PORT=${EVENT_PORT:-3002}
+      - JWT_SECRET=${JWT_SECRET}
+    env_file:
+      - .env
     depends_on:
       - auth
       - event
-
-  mongo:
-    image: mongo:6.0
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
 
   redis:
     image: redis:7-alpine
     restart: always
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
 
 volumes:
   mongo-data:
-  
