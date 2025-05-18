@@ -1,17 +1,16 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorCode } from '../constants/error-codes';
+import { ErrorCode, ERROR_CODES } from '../constants/error-codes';
 
 /**
  * 에러 응답의 표준 인터페이스
  */
 export interface ErrorResponse {
-  status: number;
-  message: string;
-  errorCode: ErrorCode;
-  error?: string;
-  timestamp?: string;
-  path?: string;
-  details?: Record<string, any>;
+  error: {
+    name: string;
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  };
 }
 
 /**
@@ -27,11 +26,12 @@ export class AppException extends HttpException {
     details?: Record<string, any>
   ) {
     const errorResponse: ErrorResponse = {
-      status: statusCode,
-      message,
-      errorCode,
-      timestamp: new Date().toISOString(),
-      details,
+      error: {
+        name: errorCode,
+        message,
+        code: ERROR_CODES[errorCode],
+        details
+      }
     };
     
     super(errorResponse, statusCode);
@@ -43,7 +43,7 @@ export class AppException extends HttpException {
   }
 
   getErrorCode(): ErrorCode {
-    return this.errorResponse.errorCode;
+    return this.errorResponse.error.name as ErrorCode;
   }
 }
 

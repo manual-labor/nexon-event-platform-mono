@@ -44,11 +44,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const errorResponse = exception.getErrorResponse();
     
     this.logger.error(
-      `AppException (${errorResponse.status}): ${JSON.stringify({
-        message: errorResponse.message,
-        errorCode: errorResponse.errorCode,
-        details: errorResponse.details,
-      })}`,
+      `AppException: ${JSON.stringify(errorResponse.error)}`,
       exception.stack,
     );
 
@@ -65,7 +61,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       typeof resp === 'object' && resp.message
         ? resp.message
         : exception.message;
-    const error = typeof resp === 'object' && resp.error ? resp.error : null;
+    const errorName = typeof resp === 'object' && resp.error ? resp.error : 'HTTP_ERROR';
     
     // 기존 예외에 errorCode가 없으면 상태 코드에 맞는 기본 에러 코드 사용
     const errorCode = 
@@ -73,26 +69,39 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       this.getDefaultErrorCodeByStatus(status);
 
     this.logger.error(
-      `HTTP Exception (${status}): ${JSON.stringify({ message, error, errorCode })}`,
+      `HTTP Exception (${status}): ${JSON.stringify({ message, errorName, errorCode })}`,
       exception.stack,
     );
 
-    return throwError(() => new RpcException(this.createRpcError(status, message, error, errorCode)));
+    return throwError(() => new RpcException({
+      error: {
+        name: errorName,
+        message: typeof message === 'string' ? message : message.join(', '),
+        code: errorCode
+      }
+    }));
   }
 
   private handleRpcException(exception: RpcException): Observable<never> {
     const err = exception.getError();
-    
-    // 이미 RpcException인 경우 그대로 전달
-    // 단, errorCode가 없으면 추가
-    if (typeof err === 'object' && err !== null) {
-      if (!(err as any).errorCode) {
-        (err as any).errorCode = GENERAL_ERROR_CODES.UNKNOWN_ERROR;
-      }
+
+    // 이미 표준화된 형식인지 확인
+    if (typeof err === 'object' && err !== null && (err as any).error) {
+      this.logger.error(`RPC Exception: ${JSON.stringify(err)}`, exception.stack);
+      return throwError(() => exception);
     }
     
-    this.logger.error(`RPC Exception: ${JSON.stringify(err)}`, exception.stack);
-    return throwError(() => exception);
+    // 표준화되지 않은 에러를 표준 형식으로 변환
+    const formattedError = {
+      error: {
+        name: 'RPC_ERROR',
+        message: typeof err === 'string' ? err : '알 수 없는 RPC 오류',
+        code: GENERAL_ERROR_CODES.UNKNOWN_ERROR
+      }
+    };
+
+    this.logger.error(`RPC Exception: ${JSON.stringify(formattedError)}`, exception.stack);
+    return throwError(() => new RpcException(formattedError));
   }
 
   private handleUnknownException(exception: unknown): Observable<never> {
@@ -103,14 +112,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     this.logger.error(`Unknown Exception: ${message}`, stack);
 
     return throwError(() =>
-      new RpcException(
-        this.createRpcError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          message,
-          '서버 오류',
-          GENERAL_ERROR_CODES.UNKNOWN_ERROR
-        ),
-      ),
+      new RpcException({
+        error: {
+          name: 'UNKNOWN_ERROR',
+          message: message,
+          code: GENERAL_ERROR_CODES.UNKNOWN_ERROR
+        }
+      }),
     );
   }
   
@@ -127,20 +135,5 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       default:
         return GENERAL_ERROR_CODES.INTERNAL_SERVER_ERROR;
     }
-  }
-
-  private createRpcError(
-    status: number,
-    message: string | string[],
-    error: string | null,
-    errorCode: string,
-  ) {
-    const rpcError: Record<string, any> = { 
-      status, 
-      message, 
-      errorCode 
-    };
-    if (error) rpcError.error = error;
-    return rpcError;
   }
 }

@@ -27,7 +27,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('JWT 토큰이 없습니다.');
+      throw new UnauthorizedException({
+        error: {
+          name: 'UNAUTHORIZED',
+          message: 'JWT 토큰이 없습니다.',
+          code: 'E1002'
+        }
+      });
     }
 
     try {
@@ -35,9 +41,21 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       request.user = payload;
     } catch (error) {
       if (error instanceof Error && error.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('토큰이 만료되었습니다.');
+        throw new UnauthorizedException({
+          error: {
+            name: 'TOKEN_EXPIRED',
+            message: '토큰이 만료되었습니다.',
+            code: 'E1002'
+          }
+        });
       }
-      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      throw new UnauthorizedException({
+        error: {
+          name: 'INVALID_TOKEN',
+          message: '유효하지 않은 토큰입니다.',
+          code: 'E1002'
+        }
+      });
     }
 
     return true;

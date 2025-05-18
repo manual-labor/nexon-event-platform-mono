@@ -20,13 +20,25 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
     
     if (!user) {
-      throw new UnauthorizedException('사용자 정보가 없습니다');
+      throw new UnauthorizedException({
+        error: {
+          name: 'USER_NOT_AUTHENTICATED',
+          message: '사용자 정보가 없습니다',
+          code: 'E1002'
+        }
+      });
     }
     
     const hasRole = requiredRoles.some((role) => user.role === role);
     
     if (!hasRole) {
-      throw new ForbiddenException(`접근 권한이 없습니다.`);
+      throw new ForbiddenException({
+        error: {
+          name: 'FORBIDDEN',
+          message: '접근 권한이 없습니다.',
+          code: 'E1003'
+        }
+      });
     }
     
     return true;

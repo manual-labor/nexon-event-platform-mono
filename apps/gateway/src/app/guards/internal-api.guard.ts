@@ -16,7 +16,13 @@ export class InternalApiGuard implements CanActivate {
     const apiKey = request.headers['x-api-key'];
 
     if (!apiKey || apiKey !== this.apiKey) {
-      throw new UnauthorizedException('내부 API 접근이 거부되었습니다.');
+      throw new UnauthorizedException({
+        error: {
+          name: 'INVALID_API_KEY',
+          message: '내부 API 접근이 거부되었습니다.',
+          code: 'E1002'
+        }
+      });
     }
 
     return true;

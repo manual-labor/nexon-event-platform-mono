@@ -13,15 +13,18 @@ export class UserNotFoundExceptionFilter implements ExceptionFilter {
     const errorResponse = exception.getErrorResponse();
     
     this.logger.warn(
-      `[사용자 조회 실패] ${errorResponse.message}`,
-      errorResponse.details || {},
+      `[사용자 조회 실패] ${errorResponse.error.message}`,
+      errorResponse.error.details || {},
     );
 
+    // RPC 환경에서는 RpcException으로 변환
     if (host.getType() === 'rpc') {
       throw new RpcException({
-        message: '초대자를 찾을 수 없습니다.',
-        status: HttpStatus.BAD_REQUEST,
-        errorCode: 'E1001'
+        error: {
+          name: 'USER_NOT_FOUND',
+          message: '초대자를 찾을 수 없습니다.',
+          code: 'E4000'
+        }
       });
     }
 
@@ -30,10 +33,11 @@ export class UserNotFoundExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse();
     
     response.status(HttpStatus.BAD_REQUEST).json({
-      message: '초대자를 찾을 수 없습니다.',
-      status: HttpStatus.BAD_REQUEST,
-      errorCode: 'E1001',
-      timestamp: new Date().toISOString()
+      error: {
+        name: 'USER_NOT_FOUND',
+        message: '초대자를 찾을 수 없습니다.',
+        code: 'E4000'
+      }
     });
   }
 } 

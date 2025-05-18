@@ -1,7 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { RpcException } from '@nestjs/microservices';
-import { isObject } from 'class-validator';
 import { AppException, ErrorResponse } from '../exceptions/app-exception';
 
 /**
@@ -22,21 +21,22 @@ export class AppExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const errorResponse = exception.getErrorResponse();
+    const statusCode = exception.getStatus();
 
     this.logger.error(
-      `[AppException] ${errorResponse.message}`,
-      errorResponse.details || {},
+      `[AppException] ${errorResponse.error.message}`,
+      errorResponse.error.details || {},
     );
 
-    response.status(errorResponse.status).json(errorResponse);
+    response.status(statusCode).json(errorResponse);
   }
 
   private handleRpcException(exception: AppException) {
     const errorResponse = exception.getErrorResponse();
     
     this.logger.error(
-      `[AppException] ${errorResponse.message}`,
-      errorResponse.details || {},
+      `[AppException] ${errorResponse.error.message}`,
+      errorResponse.error.details || {},
     );
 
     // 마이크로서비스 요청에 대한 응답을 위해 RpcException으로 변환
