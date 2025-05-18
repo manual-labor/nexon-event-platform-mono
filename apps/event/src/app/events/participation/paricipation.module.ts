@@ -6,7 +6,7 @@ import { Event, EventSchema } from '../schemas/event.schema';
 import { Reward, RewardSchema, RewardHistory, RewardHistorySchema } from '../schemas/reward.schema';
 import { Friend, FriendSchema } from '../schemas/friend.schema';
 import { Attendance, AttendanceSchema } from '../schemas/attendance.schema';
-import { User, UserSchema } from '../schemas/user.schema';
+import { GatewayClientModule } from '../../gateway-client/gateway-client.module';
 
 @Module({
   imports: [
@@ -17,10 +17,7 @@ import { User, UserSchema } from '../schemas/user.schema';
       { name: Friend.name, schema: FriendSchema },
       { name: Attendance.name, schema: AttendanceSchema },
     ]),
-    MongooseModule.forFeature(
-      [{ name: User.name, schema: UserSchema }],
-      'authConnection'
-    ),
+    GatewayClientModule,
   ],
   controllers: [ParticipationController],
   providers: [ParticipationService],

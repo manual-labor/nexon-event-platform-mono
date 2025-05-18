@@ -99,4 +99,22 @@ export class RewardQuantityExhaustedException extends AppException {
   constructor(message = '보상 수량이 모두 소진되었습니다', details?: Record<string, any>) {
     super('REWARD_QUANTITY_EXHAUSTED', message, HttpStatus.BAD_REQUEST, details);
   }
+}
+
+/**
+ * 사용자를 찾을 수 없을 때 발생하는 예외
+ */
+export class UserNotFoundException extends AppException {
+  constructor(message = '사용자를 찾을 수 없습니다', details?: Record<string, any>) {
+    super('USER_NOT_FOUND', message, HttpStatus.NOT_FOUND, details);
+  }
+}
+
+/**
+ * 서비스 간 통신 오류가 발생했을 때 사용하는 예외
+ */
+export class ServiceCommunicationException extends AppException {
+  constructor(message = '서비스 통신 중 오류가 발생했습니다', details?: Record<string, any>) {
+    super('SERVICE_COMMUNICATION_ERROR', message, HttpStatus.INTERNAL_SERVER_ERROR, details);
+  }
 } 

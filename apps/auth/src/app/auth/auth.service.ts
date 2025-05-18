@@ -124,4 +124,20 @@ export class AuthService {
       updatedAt: user.updatedAt
     }));
   }
+
+  async getUserByEmail(email: string): Promise<UserResponseDto | null> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      return null;
+    }
+    
+    return {
+      id: user.id,
+      email: user.email,
+      nickname: user.nickname,
+      role: user.role,
+      provider: user.provider,
+      lastLogin: user.lastLogin,
+    };
+  }
 } 

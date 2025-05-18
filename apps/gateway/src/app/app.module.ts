@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthController } from "./auth/auth.controller";
 import { EventController } from "./event/event.controller";
+import { InternalController } from "./internal/internal.controller";
 import { RpcClientProxyService } from './services/rpc-client-proxy.service';
 import { RoleValidationService } from './services/role-validation.service';
 
@@ -52,7 +53,7 @@ import { RoleValidationService } from './services/role-validation.service';
       },
     ]),
   ],
-  controllers: [AppController, AuthController, EventController],
+  controllers: [AppController, AuthController, EventController, InternalController],
   providers: [
     AppService,
     RpcClientProxyService,

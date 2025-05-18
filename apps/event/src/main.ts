@@ -4,6 +4,11 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app/app.module';
 import { GlobalExceptionFilter } from './app/filters/global-exception.filter';
+import { 
+  AppExceptionFilter, 
+  ServiceCommunicationExceptionFilter, 
+  UserNotFoundExceptionFilter 
+} from './app/common/filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,7 +26,12 @@ async function bootstrap() {
   );
   
   // 글로벌 예외 필터 적용
-  microservice.useGlobalFilters(new GlobalExceptionFilter());
+  microservice.useGlobalFilters(
+    new AppExceptionFilter(),
+    new ServiceCommunicationExceptionFilter(),
+    new UserNotFoundExceptionFilter(),
+    new GlobalExceptionFilter(),
+  );
   
   await microservice.listen();
   Logger.log(

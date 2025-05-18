@@ -5,16 +5,18 @@ import { Event, EventDocument, EventStatus, EventConditionType } from '../schema
 import { Reward, RewardDocument, RewardHistory, RewardHistoryDocument } from '../schemas/reward.schema';
 import { Friend, FriendDocument } from '../schemas/friend.schema';
 import { Attendance, AttendanceDocument } from '../schemas/attendance.schema';
-import { User } from '../schemas/user.schema';
 import { 
   EventNotFoundException,
   EventInactiveException,
   EventPeriodException,
-  RewardAlreadyClaimedException
+  RewardAlreadyClaimedException,
+  UserNotFoundException,
+  ServiceCommunicationException
 } from '../../common/exceptions/app-exception';
 import { FriendInviteRequestDto, FriendInviteResponseDto } from '../dto/friend.dto';
 import { AttendanceResponseDto } from '../dto/attendance.dto';
 import { RewardResponseDto, RequestRewardDto } from '../dto/reward.dto';
+import { AuthClientService } from '../../gateway-client/auth-client.service';
 
 interface BaseDocument extends Document {
   _id: Types.ObjectId;
@@ -35,7 +37,7 @@ export class ParticipationService {
     @InjectModel(RewardHistory.name) private rewardHistoryModel: Model<RewardHistoryDocument & BaseDocument>,
     @InjectModel(Friend.name) private friendModel: Model<FriendDocumentWithTimestamps>,
     @InjectModel(Attendance.name) private attendanceModel: Model<AttendanceDocumentWithTimestamps>,
-    @InjectModel(User.name, 'authConnection') private userModel: Model<User>,
+    private readonly authClientService: AuthClientService,
   ) {}
 
   // 친구 초대
@@ -53,13 +55,7 @@ export class ParticipationService {
       throw new ConflictException('이미 초대를 받았던 이력이 있습니다.');
     }
     
-    const inviter = await this.userModel.findOne({ 
-      email: inviteData.inviterEmail,
-    }).exec();
-
-    if (!inviter) {
-      throw new BadRequestException('초대자를 찾을 수 없습니다.');
-    }
+    const inviter = await this.authClientService.getUserByEmail(inviteData.inviterEmail);
     
     const newInvite = new this.friendModel({
       inviterId: inviter.id,
