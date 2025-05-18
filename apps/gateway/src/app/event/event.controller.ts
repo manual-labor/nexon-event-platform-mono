@@ -9,7 +9,7 @@ import { RpcClientProxyService} from '../services/rpc-client-proxy.service';
 import { RoleValidationService } from '../services/role-validation.service';
 import { EventDto, RewardDto } from '../dto/event.dto';
 import { RequestUser } from '../interfaces/request-user.interface';
-import { FriendInviteDto, RequestRewardDto as ParticipationRewardDto } from '../dto/event-participation.dto';
+import { FriendInviteDto } from '../dto/event-participation.dto';
 
 @Controller('event')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -116,20 +116,6 @@ export class EventController {
     );
   }
 
-  @Roles(UserRole.USER, UserRole.ADMIN)
-  @Post(':eventId/rewards/request')
-  async requestReward(@Param('eventId') eventId: string, @Request() req: { user: RequestUser }) {
-    return this.rpcClientProxyService.send(
-      this.eventClient,
-      { cmd: 'request-reward' },
-      {
-        eventId, 
-        userId: req.user.id,
-        user: req.user
-      }
-    );
-  }
-
   @Get('rewards/history')
   async getRewardHistory(@Request() req: { user: RequestUser }, @Query('userId') userId?: string) {
     if (!this.roleValidationService.hasManagementRole(req.user.role) && userId !== req.user.id) {
@@ -172,8 +158,13 @@ export class EventController {
   }
 
   @Roles(UserRole.USER, UserRole.ADMIN)
-  @Post('participation/request-reward')
-  async requestParticipationReward(@Body() requestData: ParticipationRewardDto, @Request() req: { user: RequestUser }) {
+  @Post('participation/:eventId/rewards/:rewardId/claim')
+  async claimReward(
+    @Param('eventId') eventId: string,
+    @Param('rewardId') rewardId: string,
+    @Request() req: { user: RequestUser }
+  ) {
+    const requestData = { eventId, rewardId };
     return this.rpcClientProxyService.send(
       this.eventClient,
       { cmd: 'request-reward' },
