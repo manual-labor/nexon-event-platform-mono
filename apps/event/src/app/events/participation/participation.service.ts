@@ -5,6 +5,7 @@ import { Event, EventDocument, EventStatus, EventConditionType } from '../schema
 import { Reward, RewardDocument, RewardHistory, RewardHistoryDocument } from '../schemas/reward.schema';
 import { Friend, FriendDocument } from '../schemas/friend.schema';
 import { Attendance, AttendanceDocument } from '../schemas/attendance.schema';
+import { User } from '../schemas/user.schema';
 import { 
   EventNotFoundException,
   EventInactiveException,
@@ -34,26 +35,37 @@ export class ParticipationService {
     @InjectModel(RewardHistory.name) private rewardHistoryModel: Model<RewardHistoryDocument & BaseDocument>,
     @InjectModel(Friend.name) private friendModel: Model<FriendDocumentWithTimestamps>,
     @InjectModel(Attendance.name) private attendanceModel: Model<AttendanceDocumentWithTimestamps>,
+    @InjectModel(User.name, 'authConnection') private userModel: Model<User>,
   ) {}
 
   // 친구 초대
   async inviteFriend(inviteData: FriendInviteRequestDto, userId: string, userEmail: string): Promise<FriendInviteResponseDto> {
 
-    if (inviteData.inviteeEmail === userEmail) {
+    if (inviteData.inviterEmail === userEmail) {
       throw new BadRequestException('자기 자신을 초대할 수 없습니다.');
     }
     
     const existingInvite = await this.friendModel.findOne({ 
-      inviteeEmail: inviteData.inviteeEmail,
+      inviteeEmail: userEmail,
     }).exec();
     
     if (existingInvite) {
-      throw new ConflictException('이미 초대된 이메일입니다.');
+      throw new ConflictException('이미 초대를 받았던 이력이 있습니다.');
+    }
+    
+    const inviter = await this.userModel.findOne({ 
+      email: inviteData.inviterEmail,
+    }).exec();
+
+    if (!inviter) {
+      throw new BadRequestException('초대자를 찾을 수 없습니다.');
     }
     
     const newInvite = new this.friendModel({
-      inviterId: userId,
-      inviteeEmail: inviteData.inviteeEmail,
+      inviterId: inviter.id,
+      inviterEmail: inviteData.inviterEmail,
+      inviteeId: userId,
+      inviteeEmail: userEmail,
     });
     
     const savedInvite = await newInvite.save();
@@ -234,11 +246,8 @@ export class ParticipationService {
 
   private mapFriendToDto(friend: FriendDocumentWithTimestamps): FriendInviteResponseDto {
     return {
-      id: friend._id.toString(),
       inviterId: friend.inviterId.toString(),
-      inviteeEmail: friend.inviteeEmail,
-      inviteeId: friend.inviteeId?.toString(),
-      isRegistered: friend.isRegistered,
+      inviterEmail: friend.inviterEmail.toString(),
       createdAt: friend.createdAt,
     };
   }

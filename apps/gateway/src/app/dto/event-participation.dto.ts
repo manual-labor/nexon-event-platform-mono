@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, IsMongoId } from 'class-validator';
 export class FriendInviteDto {
   @IsEmail()
   @IsNotEmpty()
-  inviteeEmail!: string;
+  inviterEmail!: string;
 }
 
 export class RequestRewardDto {
