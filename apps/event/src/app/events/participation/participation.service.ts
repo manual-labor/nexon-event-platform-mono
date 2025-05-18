@@ -38,12 +38,11 @@ export class ParticipationService {
 
   // 친구 초대
   async inviteFriend(inviteData: FriendInviteRequestDto, userId: string, userEmail: string): Promise<FriendInviteResponseDto> {
-    // 자기 자신을 초대하는 경우 방지
+
     if (inviteData.inviteeEmail === userEmail) {
       throw new BadRequestException('자기 자신을 초대할 수 없습니다.');
     }
     
-    // 이미 초대된 이메일인지 확인
     const existingInvite = await this.friendModel.findOne({ 
       inviteeEmail: inviteData.inviteeEmail,
     }).exec();
@@ -66,7 +65,6 @@ export class ParticipationService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // 오늘 이미 출석했는지 확인
     const existingAttendance = await this.attendanceModel.findOne({
       userId,
       attendanceDate: {
@@ -96,13 +94,12 @@ export class ParticipationService {
       consecutiveDays = yesterdayAttendance.consecutiveDays + 1;
     }
     
-    const newAttendance = new this.attendanceModel({
+    const savedAttendance = await new this.attendanceModel({
       userId,
       attendanceDate: today,
       consecutiveDays,
-    });
-    
-    const savedAttendance = await newAttendance.save();
+    }).save();
+
     return this.mapAttendanceToDto(savedAttendance);
   }
 
@@ -139,16 +136,14 @@ export class ParticipationService {
     // 조건을 충족했는지 확인
     await this.validateEventConditions(event, userId);
     
-    // 보상 내역 생성
-    const newHistory = new this.rewardHistoryModel({
+    
+    await new this.rewardHistoryModel({
       userId,
       eventId,
       rewardId,
       claimed: true,
       claimedAt: new Date(),
-    });
-    
-    await newHistory.save();
+    }).save();
     
     return {
       success: true,
@@ -159,18 +154,21 @@ export class ParticipationService {
 
   // 이벤트 조건 검증
   private async validateEventConditions(event: EventDocumentWithTimestamps, userId: string): Promise<void> {
-    for (const condition of event.conditions) {
-      switch (condition.type) {
-        case EventConditionType.CONSECUTIVE_ATTENDANCE:
-          await this.validateConsecutiveAttendance(userId, condition.value);
-          break;
-        case EventConditionType.FRIEND_INVITE:
-          await this.validateFriendInvites(userId, condition.value);
-          break;
-        default:
-          // 다른 조건 타입이 추가될 경우 여기에 구현
-          break;
-      }
+    if (!event.condition) {
+      return; // 조건이 없으면 검증 통과
+    }
+
+    const condition = event.condition;
+    switch (condition.type) {
+      case EventConditionType.CONSECUTIVE_ATTENDANCE:
+        await this.validateConsecutiveAttendance(userId, condition.value);
+        break;
+      case EventConditionType.INVITE_FRIEND:
+        await this.validateFriendInvites(userId, condition.value);
+        break;
+      default:
+        // 다른 조건 타입이 추가될 경우 여기에 구현
+        break;
     }
   }
 

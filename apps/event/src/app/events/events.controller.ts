@@ -13,7 +13,7 @@ import {
   RewardResponseDto,
   RequestRewardDto
 } from './dto/reward.dto';
-import { AttendanceRequestDto, AttendanceResponseDto } from './dto/attendance.dto';
+import { AttendanceResponseDto } from './dto/attendance.dto';
 import { FriendInviteRequestDto, FriendInviteResponseDto } from './dto/friend.dto';
 
 interface UserPayload {
@@ -64,21 +64,5 @@ export class EventsController {
   @MessagePattern({ cmd: 'get-event-rewards' })
   async getEventRewards(@Payload() data: { eventId: string }): Promise<RewardResponseDto[]> {
     return this.eventsService.getEventRewards(data.eventId);
-  }
-
-  // 내부 유저 전용 API
-  @MessagePattern({ cmd: 'event/request/friends' })
-  async inviteFriend(@Payload() data: { inviteData: FriendInviteRequestDto; user: UserPayload }): Promise<FriendInviteResponseDto> {
-    return this.eventsService.inviteFriend(data.inviteData, data.user.id, data.user.id);
-  }
-
-  @MessagePattern({ cmd: 'event/request/attendance' })
-  async checkAttendance(@Payload() data: { user: UserPayload }): Promise<AttendanceResponseDto> {
-    return this.eventsService.checkAttendance(data.user.id);
-  }
-
-  @MessagePattern({ cmd: 'event/request/reward' })
-  async requestReward(@Payload() data: { requestData: RequestRewardDto; user: UserPayload }) {
-    return this.eventsService.requestReward(data.requestData, data.user.id);
   }
 }

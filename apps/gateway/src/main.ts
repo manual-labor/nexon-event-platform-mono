@@ -9,8 +9,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   
   app.enableCors();
-  const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
+
+  app.setGlobalPrefix('v1');
   
   app.useGlobalFilters(new GlobalExceptionFilter());
   
@@ -29,7 +29,7 @@ async function bootstrap() {
   await app.listen(port);
   
   Logger.log(
-    `🚀 Gateway 서버가 http://localhost:${port}/${globalPrefix} 에서 실행 중입니다`
+    `🚀 Gateway 서버가 http://localhost:${port} 에서 실행 중입니다`
   );
 }
 

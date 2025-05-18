@@ -147,11 +147,11 @@ export class EventController {
   }
 
   @Roles(UserRole.USER, UserRole.ADMIN)
-  @Post('participate/friends')
+  @Post('participation/invite-friends')
   async inviteFriend(@Body() inviteData: FriendInviteDto, @Request() req: { user: RequestUser }) {
     return this.rpcClientProxyService.send(
       this.eventClient,
-      { cmd: 'request/friends' },
+      { cmd: 'invite-friends' },
       {
         inviteData,
         user: req.user
@@ -160,11 +160,11 @@ export class EventController {
   }
 
   @Roles(UserRole.USER, UserRole.ADMIN)
-  @Post('participate/attendance')
+  @Post('participation/check-attendance')
   async checkAttendance(@Request() req: { user: RequestUser }) {
     return this.rpcClientProxyService.send(
       this.eventClient,
-      { cmd: 'request/attendance' },
+      { cmd: 'check-attendance' },
       {
         user: req.user
       }
@@ -172,11 +172,11 @@ export class EventController {
   }
 
   @Roles(UserRole.USER, UserRole.ADMIN)
-  @Post('participate/reward')
+  @Post('participation/request-reward')
   async requestParticipationReward(@Body() requestData: ParticipationRewardDto, @Request() req: { user: RequestUser }) {
     return this.rpcClientProxyService.send(
       this.eventClient,
-      { cmd: 'request/reward' },
+      { cmd: 'request-reward' },
       {
         requestData,
         user: req.user
