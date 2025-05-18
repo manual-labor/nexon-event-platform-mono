@@ -9,9 +9,9 @@ export enum EventStatus {
 }
 
 export enum EventConditionType {
-  LOGIN_DAYS = 'LOGIN_DAYS',       // 로그인 일수
+  PARTICIPATION_VERIFICATION = 'PARTICIPATION_VERIFICATION',       // 참여 인증
   CONSECUTIVE_ATTENDANCE = 'CONSECUTIVE_ATTENDANCE',  // 연속 출석
-  FRIEND_INVITE = 'FRIEND_INVITE',    // 친구 초대
+  INVITE_FRIEND = 'INVITE_FRIEND',    // 친구 초대
 }
 
 @Schema({ timestamps: true })
@@ -27,6 +27,7 @@ export class EventCondition {
 }
 
 const EventConditionSchema = SchemaFactory.createForClass(EventCondition);
+EventConditionSchema.set('_id', false);
 
 @Schema({ timestamps: true })
 export class Event {
@@ -45,8 +46,8 @@ export class Event {
   @Prop({ type: Date, required: true })
   endDate!: Date;
 
-  @Prop({ type: [EventConditionSchema], default: [] })
-  conditions!: EventCondition[];
+  @Prop({ type: EventConditionSchema, default: null })
+  condition!: EventCondition;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   createdBy!: string;

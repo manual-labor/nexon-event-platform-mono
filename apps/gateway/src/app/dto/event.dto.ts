@@ -1,5 +1,20 @@
 import { IsString, IsOptional, IsNotEmpty, IsBoolean, IsDateString, IsArray, IsEnum, IsObject, ValidateNested, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
+import { EventConditionType } from '../common/constants/enums';
+
+export class EventConditionDto {
+  @IsEnum(EventConditionType)
+  @IsNotEmpty()
+  type!: EventConditionType;
+
+  @IsNumber()
+  @IsNotEmpty()
+  value!: number;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+}
 
 export class RewardDto {
   @IsString()
@@ -60,11 +75,10 @@ export class EventDto {
   @IsOptional()
   tags?: string[];
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => RewardDto)
+  @ValidateNested()
+  @Type(() => EventConditionDto)
   @IsOptional()
-  rewards?: RewardDto[];
+  condition?: EventConditionDto;
 
   @IsObject()
   @IsOptional()

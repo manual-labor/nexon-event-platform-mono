@@ -1,6 +1,7 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDate, IsArray, IsMongoId, ValidateNested, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { EventStatus, EventConditionType } from '../schemas/event.schema';
+import { RewardResponseDto } from './reward.dto';
 
 export class EventConditionDto {
   @IsEnum(EventConditionType)
@@ -39,11 +40,10 @@ export class CreateEventDto {
   @IsNotEmpty()
   endDate!: Date;
 
-  @IsArray()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => EventConditionDto)
   @IsOptional()
-  conditions?: EventConditionDto[];
+  condition?: EventConditionDto;
 }
 
 export class UpdateEventDto {
@@ -69,11 +69,10 @@ export class UpdateEventDto {
   @IsOptional()
   endDate?: Date;
 
-  @IsArray()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => EventConditionDto)
   @IsOptional()
-  conditions?: EventConditionDto[];
+  condition?: EventConditionDto;
 }
 
 export class EventResponseDto {
@@ -96,8 +95,16 @@ export class EventResponseDto {
   @IsDate()
   endDate!: Date;
   
+  @ValidateNested()
+  @Type(() => EventConditionDto)
+  @IsOptional()
+  condition?: EventConditionDto;
+
   @IsArray()
-  conditions!: EventConditionDto[];
+  @ValidateNested({ each: true })
+  @Type(() => RewardResponseDto)
+  @IsOptional()
+  rewards?: RewardResponseDto[];
   
   @IsDate()
   createdAt!: Date;
