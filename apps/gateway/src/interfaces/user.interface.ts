@@ -22,3 +22,10 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
 } 
+
+export interface RequestUser {
+  id: string;
+  nickname: string;
+  email: string;
+  role: UserRole;
+}

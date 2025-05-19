@@ -9,7 +9,7 @@ import { RpcClientProxyService} from '../services/rpc-client-proxy.service';
 import { RoleValidationService } from '../services/role-validation.service';
 import { EventDto, EventResponseDto as EventServiceEventResponseDto, RewardDto, UpdateRewardHistoryStatusDto } from '../dto/event.dto';
 import { RewardResponseDto as EventServiceRewardResponseDto, RewardHistoryResponseDto as EventServiceRewardHistoryResponseDto } from '../dto/reward.dto';
-import { RequestUser } from '../interfaces/request-user.interface';
+import { RequestUser } from '../../interfaces/user.interface';
 import { FriendInviteDto } from '../dto/event-participation.dto';
 import { AttendanceResponseDto as EventServiceAttendanceResponseDto } from '../dto/attendance.dto';
 import { FriendInviteResponseDto as EventServiceFriendInviteResponseDto } from '../dto/friend.dto';
