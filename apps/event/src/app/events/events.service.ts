@@ -385,11 +385,11 @@ export class EventsService {
     const endDate = endDateInput instanceof Date ? endDateInput : new Date(endDateInput);
 
     const nowTime: number = new Date().getTime();
-      if(endDate.getTime() >= nowTime) {
+      if(endDate.getTime() <= nowTime) {
         return EventStatus.ENDED;
       }
 
-      if(startDate.getTime() >= nowTime && nowTime <= endDate.getTime()) {
+      if(startDate.getTime() <= nowTime && nowTime <= endDate.getTime()) {
         return EventStatus.ONGOING;
       }
 
