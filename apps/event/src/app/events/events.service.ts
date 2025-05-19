@@ -1,9 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Document, Types, Connection } from 'mongoose';
+import { Model, Document, Types, Connection, PipelineStage } from 'mongoose';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Event, EventDocument, EventStatus, EventConditionType } from './schemas/event.schema';
-import { Reward, RewardDocument, RewardHistory, RewardHistoryDocument } from './schemas/reward.schema';
+import { Reward, RewardDocument, RewardHistory, RewardHistoryDocument, RewardType } from './schemas/reward.schema';
 import { Friend, FriendDocument } from './schemas/friend.schema';
 import { Attendance, AttendanceDocument } from './schemas/attendance.schema';
 import { 
@@ -13,9 +13,17 @@ import {
   RewardAlreadyClaimedException,
 } from '../common/exceptions/app-exception';
 import { CreateEventDto, UpdateEventDto, EventResponseDto } from './dto/event.dto';
-import { CreateRewardDto, UpdateRewardDto, RewardResponseDto, RequestRewardDto } from './dto/reward.dto';
+import { 
+  CreateRewardDto, 
+  UpdateRewardDto, 
+  RewardResponseDto, 
+  RequestRewardDto,
+  RewardHistoryResponseDto,
+  EventRewardHistoryResponseDto
+} from './dto/reward.dto';
 import { FriendInviteRequestDto, FriendInviteResponseDto } from './dto/friend.dto';
 import { AttendanceResponseDto } from './dto/attendance.dto';
+import { UserRole } from '../interfaces/user.interface';
 
 interface BaseDocument extends Document {
   id: Types.ObjectId;
@@ -144,6 +152,124 @@ export class EventsService {
     return rewards.map(reward => this.mapRewardToDto(reward));
   }
 
+ async getRewardHistory(
+  userId: string | null,
+  userRole: UserRole,
+  eventId?: string,
+): Promise<EventRewardHistoryResponseDto[]> {
+  if (userRole === UserRole.USER && !userId) {
+    throw new BadRequestException('사용자 ID가 필요합니다.');
+  }
+  if (eventId && !Types.ObjectId.isValid(eventId)) {
+    throw new BadRequestException('유효하지 않은 이벤트 ID입니다.');
+  }
+
+  const match: Record<string, any> = {};
+  if (userId) match.userId = new Types.ObjectId(userId);
+  if (eventId) match.eventId = new Types.ObjectId(eventId);
+
+  const pipeline = [
+    { $match: match },
+    { $sort: { createdAt: -1 } },
+
+    {
+      $lookup: {
+        from: 'rewards',
+        localField: 'rewardId',
+        foreignField: '_id',
+        as: 'rewardDetails',
+      },
+    },
+    { $unwind: '$rewardDetails' },
+
+    {
+      $lookup: {
+        from: 'events',
+        localField: 'eventId',
+        foreignField: '_id',
+        as: 'eventDetails',
+      },
+    },
+    { $unwind: '$eventDetails' },
+
+    {
+      $project: {
+        userId: 1,
+        eventId: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        claimed: 1,
+        claimedAt: 1,
+        reward: {
+          id: '$rewardDetails._id',
+          name: '$rewardDetails.name',
+          type: '$rewardDetails.type',
+          quantity: '$rewardDetails.quantity',
+          description: '$rewardDetails.description',
+          createdAt: '$rewardDetails.createdAt',
+          updatedAt: '$rewardDetails.updatedAt',
+        },
+        eventTitle: '$eventDetails.title',
+      },
+    },
+
+    {
+      $group: {
+        _id: '$eventId',
+        eventTitle: { $first: '$eventTitle' },
+        rewards: {
+          $push: {
+            id: '$_id',
+            userId: '$userId',
+            rewardId: '$reward.id',
+            claimed: '$claimed',
+            claimedAt: '$claimedAt',
+            createdAt: '$createdAt',
+            updatedAt: '$updatedAt',
+            rewardDetails: '$reward',
+          },
+        },
+      },
+    },
+
+    {
+      $project: {
+        _id: 0,
+        eventId: { $toString: '$_id' },
+        eventTitle: 1,
+        rewards: {
+          $map: {
+            input: '$rewards',
+            as: 'r',
+            in: {
+              id: { $toString: '$$r.id' },
+              userId: { $toString: '$$r.userId' },
+              rewardId: { $toString: '$$r.rewardId' },
+              claimed: '$$r.claimed',
+              claimedAt: '$$r.claimedAt',
+              createdAt: '$$r.createdAt',
+              updatedAt: '$$r.updatedAt',
+              rewardDetails: {
+                id: { $toString: '$$r.rewardDetails.id' },
+                eventId: { $toString: '$$r.rewardDetails.eventId' },
+                name: '$$r.rewardDetails.name',
+                type: '$$r.rewardDetails.type',
+                quantity: '$$r.rewardDetails.quantity',
+                description: '$$r.rewardDetails.description',
+                createdAt: '$$r.rewardDetails.createdAt',
+                updatedAt: '$$r.rewardDetails.updatedAt',
+              },
+            },
+          },
+        },
+      },
+    },
+  ];
+
+  const raw = await this.rewardHistoryModel.aggregate(pipeline as PipelineStage[]);
+  return raw as EventRewardHistoryResponseDto[];
+}
+
 
   private async findEventById(eventId: string): Promise<EventDocumentWithTimestamps> {
     if (!Types.ObjectId.isValid(eventId)) {
@@ -197,6 +323,7 @@ export class EventsService {
       updatedAt: reward.updatedAt,
     };
   }
+
   private validateEventDateRange(startDateInput: Date | string, endDateInput: Date | string): void {
     const startDate = startDateInput instanceof Date ? startDateInput : new Date(startDateInput);
     const endDate = endDateInput instanceof Date ? endDateInput : new Date(endDateInput);

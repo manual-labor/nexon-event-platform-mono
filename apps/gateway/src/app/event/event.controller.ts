@@ -117,7 +117,12 @@ export class EventController {
   }
 
   @Get('rewards/history')
-  async getRewardHistory(@Request() req: { user: RequestUser }, @Query('userId') userId?: string) {
+  async getRewardHistory(
+    @Request() req: { user: RequestUser }, 
+    @Query('userId') userId?: string,
+    @Query('eventId') eventId?: string
+  ) {
+    // 관리자 권한이 아니면 본인의 보상 내역만 조회 가능
     if (!this.roleValidationService.hasManagementRole(req.user.role) && userId !== req.user.id) {
       userId = req.user.id;
     }
@@ -127,6 +132,7 @@ export class EventController {
       { cmd: 'get-reward-history' },
       {
         userId,
+        eventId,
         user: req.user
       }
     );

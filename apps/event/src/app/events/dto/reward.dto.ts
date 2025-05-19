@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsEnum, IsDate, IsMongoId, IsBoolean, IS_MONGO_ID } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsEnum, IsDate, IsMongoId, IsBoolean, IS_MONGO_ID, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 import { RewardType } from '../schemas/reward.schema';
 
@@ -77,5 +77,60 @@ export class RequestRewardDto {
   @IsMongoId()
   @IsNotEmpty()
   rewardId!: string;
+}
+
+export class RewardHistoryResponseDto {
+  @IsMongoId()
+  id!: string;
+
+  @IsMongoId()
+  userId!: string;
+
+  @IsMongoId()
+  @IsOptional()
+  eventId?: string;
+
+  @IsMongoId()
+  rewardId!: string;
+
+  @IsBoolean()
+  claimed!: boolean;
+
+  @IsDate()
+  claimedAt!: Date;
+
+  @IsDate()
+  createdAt!: Date;
+
+  @IsDate()
+  updatedAt!: Date;
+
+  @IsOptional()
+  rewardDetails?: RewardResponseDto;
+
+  @IsOptional()
+  @IsString()
+  eventTitle?: string;
+}
+
+export class GetRewardHistoryDto {
+  @IsMongoId()
+  @IsOptional()
+  userId?: string;
+
+  @IsMongoId()
+  @IsOptional()
+  eventId?: string;
+}
+
+export class EventRewardHistoryResponseDto {
+  @IsMongoId()
+  eventId!: string;
+
+  @IsString()
+  eventTitle!: string;
+
+  @IsArray()
+  rewards!: RewardHistoryResponseDto[];
 }
 
