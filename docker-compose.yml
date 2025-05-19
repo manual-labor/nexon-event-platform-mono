@@ -66,7 +66,7 @@ services:
     environment:
       - AUTH_SERVICE_HOST=auth
       - AUTH_SERVICE_PORT=${AUTH_PORT:-3001}
-      - MONGODB_URI_AUTH=${MONGODB_URI_AUTH:-mongodb://mongo:27017/authdb?replicaSet=rs0&directConnection=true&serverSelectionTimeoutMS=60000}
+      - MONGODB_URI_AUTH=${MONGODB_URI_AUTH:-mongodb://mongo:27017/authdb?replicaSet=rs0&serverSelectionTimeoutMS=60000}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       - JWT_SECRET=${JWT_SECRET}
     env_file:
@@ -88,7 +88,7 @@ services:
     environment:
       - EVENT_SERVICE_HOST=event
       - EVENT_SERVICE_PORT=${EVENT_PORT:-3002}
-      - MONGODB_URI_EVENT=${MONGODB_URI_EVENT:-mongodb://mongo:27017/eventdb?replicaSet=rs0&directConnection=true&serverSelectionTimeoutMS=60000}
+      - MONGODB_URI_EVENT=${MONGODB_URI_EVENT:-mongodb://mongo:27017/eventdb?replicaSet=rs0&serverSelectionTimeoutMS=60000}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       - JWT_SECRET=${JWT_SECRET}
     env_file:
