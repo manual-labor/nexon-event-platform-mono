@@ -60,27 +60,27 @@ export class RewardDto {
 }
 
 export class EventDto {
-  @ApiProperty({ description: '이벤트 제목', example: '신규 유저 환영 이벤트' })
+  @ApiProperty({ description: '이벤트 제목', example: '신규 유저 초대 이벤트'})
   @IsString()
   @IsNotEmpty()
   title!: string;
 
-  @ApiProperty({ description: '이벤트 설명', example: '신규 유저에게 특별한 보상을 드립니다.' })
+  @ApiProperty({ description: '이벤트 설명', example: '신규 유저가 이메일를 입력하면 보상을 받을 수 있습니다.' })
   @IsString()
   @IsNotEmpty()
   description!: string;
 
-  @ApiProperty({ description: '이벤트 시작일', type: String, format: 'date-time', example: '2024-01-01T00:00:00Z' })
+  @ApiProperty({ description: '이벤트 시작일', type: String, format: 'date-time', example: '2025-05-20T00:00:00Z' })
   @IsDateString()
   @IsNotEmpty()
   startDate!: string;
 
-  @ApiProperty({ description: '이벤트 종료일', type: String, format: 'date-time', example: '2024-01-31T23:59:59Z' })
+  @ApiProperty({ description: '이벤트 종료일', type: String, format: 'date-time', example: '2025-05-31T23:59:59Z' })
   @IsDateString()
   @IsNotEmpty()
   endDate!: string;
 
-  @ApiProperty({ description: '이벤트 상태', required: false, example: '진행중' })
+  @ApiProperty({ description: '이벤트 상태', required: false, example: 'ONGOING' })
   @IsString()
   @IsOptional()
   status?: string;
@@ -95,7 +95,7 @@ export class EventDto {
   @IsOptional()
   tags?: string[];
 
-  @ApiProperty({ description: '이벤트 조건', type: EventConditionDto, required: false })
+  @ApiProperty({ description: '이벤트 조건', type: EventConditionDto, required: false, example: { type: EventConditionType.PARTICIPATION_VERIFICATION, value: 5, description: '친구 초대 5명 이상' } })
   @ValidateNested()
   @Type(() => EventConditionDto)
   @IsOptional()
@@ -139,36 +139,26 @@ export class EventResponseDto {
   @IsEnum(EventStatus)
   status!: EventStatus;
   
-  @ApiProperty({ description: '이벤트 시작일', type: Date, example: '2025-01-01T00:00:00.000Z' })
+  @ApiProperty({ description: '이벤트 시작일', type: Date, example: '2025-05-19T00:00:00.000Z' })
   @IsDateString()
   startDate!: Date;
   
-  @ApiProperty({ description: '이벤트 종료일', type: Date, example: '2025-01-31T23:59:59.000Z' })
+  @ApiProperty({ description: '이벤트 종료일', type: Date, example: '2025-05-31T23:59:59.000Z' })
   @IsDateString()
   endDate!: Date;
   
-  @ApiProperty({ description: '이벤트 참여 조건', type: EventConditionDto, required: false })
+  @ApiProperty({ description: '이벤트 참여 조건', type: EventConditionDto, required: false, example: { type: EventConditionType.CONSECUTIVE_ATTENDANCE, value: 5, description: '총 5일 출석' } })
   @ValidateNested()
   @Type(() => EventConditionDto)
   @IsOptional()
   condition?: EventConditionDto;
 
-  @ApiProperty({ description: '이벤트 보상 목록', type: [RewardResponseDto], required: false })
+  @ApiProperty({ description: '이벤트 보상 목록', type: [RewardResponseDto], required: false, example: [{ name: '넥슨 캐시 1000원권', description: '넥슨 캐시 1000원권 1개', type: RewardType.CASH, quantity: 1, value: 1000 }] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => RewardResponseDto)
   @IsOptional()
   rewards?: RewardResponseDto[];
-  
-  @ApiProperty({ description: '생성 일시', type: Date, required: false, example: '2024-12-01T00:00:00.000Z' })
-  @IsDateString()
-  @IsOptional()
-  createdAt?: Date;
-  
-  @ApiProperty({ description: '수정 일시', type: Date, required: false, example: '2024-12-02T00:00:00.000Z' })
-  @IsDateString()
-  @IsOptional()
-  updatedAt?: Date;
 }
 
 
