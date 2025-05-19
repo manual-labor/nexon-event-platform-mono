@@ -7,16 +7,13 @@ services:
       - --replSet
       - rs0
       - --bind_ip_all
-      - --wiredTigerCacheSizeGB
-      - "0.25"
-      - --setParameter
-      - enableLocalhostAuthBypass=false
     ports:
       - "${MONGO_PORT:-27017}:27017"
     volumes:
       - mongo-data:/data/db
     healthcheck:
-      test: mongosh --eval "db.adminCommand('ping')" --quiet
+      test: |
+        mongo --eval "db.adminCommand('ping')" --quiet
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,25 +22,19 @@ services:
   mongo-init:
     image: mongo:6.0
     depends_on:
-      mongo:
-        condition: service_healthy
+      - mongo
     entrypoint: ["bash", "-c"]
     command: |
-      # MongoDB가 기동할 때까지 대기 (mongosh 사용)
-      until mongosh --host mongo:27017 --eval "print('ok')" --quiet; do
+      # MongoDB가 기동할 때까지 대기
+      until mongo --host mongo:27017 --eval "print('ok')" --quiet; do
         echo 'Waiting for MongoDB to be ready...';
         sleep 2;
       done;
       # rs.initiate() 호출 (단일 노드)
-      mongosh --host mongo:27017 --eval '
+      mongo --host mongo:27017 --eval '
         if (!rs.status().ok) {
-          rs.initiate({
-            _id: "rs0",
-            members: [{ _id: 0, host: "mongo:27017", priority: 1 }],
-            settings: { electionTimeoutMillis: 2000 }
-          });
+          rs.initiate({_id: "rs0", members: [{ _id: 0, host: "mongo:27017" }]});
         }
-        sleep(1000);
         printjson(rs.status());'
     restart: 'no'
 
@@ -59,18 +50,14 @@ services:
     environment:
       - AUTH_SERVICE_HOST=auth
       - AUTH_SERVICE_PORT=${AUTH_PORT:-3001}
-      - MONGODB_URI_AUTH=${MONGODB_URI_AUTH:-mongodb://mongo:27017/authdb?replicaSet=rs0&directConnection=true}
+      - MONGODB_URI_AUTH=${MONGODB_URI_AUTH:-mongodb://mongo:27017/authdb?replicaSet=rs0}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       - JWT_SECRET=${JWT_SECRET}
-      - MONGODB_CONNECT_TIMEOUT=30000
     env_file:
       - .env
-    restart: on-failure
     depends_on:
-      mongo-init:
-        condition: service_completed_successfully
-      redis:
-        condition: service_started
+      - mongo-init
+      - redis
 
   event:
     build:
@@ -84,18 +71,14 @@ services:
     environment:
       - EVENT_SERVICE_HOST=event
       - EVENT_SERVICE_PORT=${EVENT_PORT:-3002}
-      - MONGODB_URI_EVENT=${MONGODB_URI_EVENT:-mongodb://mongo:27017/eventdb?replicaSet=rs0&directConnection=true}
+      - MONGODB_URI_EVENT=${MONGODB_URI_EVENT:-mongodb://mongo:27017/eventdb?replicaSet=rs0}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       - JWT_SECRET=${JWT_SECRET}
-      - MONGODB_CONNECT_TIMEOUT=30000
     env_file:
       - .env
-    restart: on-failure
     depends_on:
-      mongo-init:
-        condition: service_completed_successfully
-      redis:
-        condition: service_started
+      - mongo-init
+      - redis
 
   gateway:
     build:
@@ -115,24 +98,15 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     env_file:
       - .env
-    restart: on-failure
     depends_on:
-      auth:
-        condition: service_started
-      event:
-        condition: service_started
+      - auth
+      - event
 
   redis:
     image: redis:7-alpine
     restart: always
     ports:
       - "${REDIS_PORT:-6379}:6379"
-    healthcheck:
-      test: redis-cli ping || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
 
 volumes:
   mongo-data:
