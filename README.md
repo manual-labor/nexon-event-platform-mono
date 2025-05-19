@@ -68,6 +68,7 @@ MONGODB_URI_EVENT="mongodb://mongo1:27017,mongo2:27017,mongo3:27017/eventdb?repl
 # Redis (auth_service, event_service 등에서 공통 사용)
 REDIS_HOST=redis # Docker 내부 호스트명, 로컬 실행 시 localhost 등
 REDIS_PORT=6379
+```
 
 ## 빌드 및 실행
 
