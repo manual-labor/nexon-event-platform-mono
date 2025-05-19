@@ -31,10 +31,25 @@ services:
         echo 'Waiting for MongoDB to be ready...';
         sleep 2;
       done;
+      # 복제 세트 초기화 전에 잠시 대기
+      sleep 10;
       # rs.initiate() 호출 (단일 노드)
       mongo --host mongo:27017 --eval '
         if (!rs.status().ok) {
-          rs.initiate({_id: "rs0", members: [{ _id: 0, host: "mongo:27017" }]});
+          rs.initiate({
+            _id: "rs0",
+            members: [{ _id: 0, host: "mongo:27017", priority: 1 }],
+            settings: {
+              chainingAllowed: true,
+              heartbeatTimeoutSecs: 2,
+              electionTimeoutMillis: 10000
+            }
+          });
+        }
+        # 복제 세트 상태 확인
+        while (!rs.status().ok || rs.status().members[0].state !== 1) {
+          print("Waiting for replica set to initialize...");
+          sleep(2000);
         }
         printjson(rs.status());'
     restart: 'no'
