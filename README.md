@@ -130,7 +130,7 @@ pnpm을 사용하여 각 서비스를 개별적으로 빌드할 수 있습니다
     | 회원가입                  | `POST`      | `/v1/auth/register`             | Public         |
     | 토큰 검증                 | `POST`      | `/v1/auth/validate`             | Public         |
     | 현재 사용자 프로필 조회    | `GET`       | `/v1/auth/profile`              | USER  |
-    | 특정 사용자 프로필 조회    | `GET`       | `/v1/auth/profile/:id`          | USER  |
+    | 특정 사용자 프로필 조회    | `GET`       | `/v1/auth/profile/:id`          | ADMIN, OPERATOR|
     | 사용자 목록 조회          | `GET`       | `/v1/auth/users`                | ADMIN, OPERATOR|
     | 사용자 정보 수정          | `PUT`       | `/v1/auth/users/:id`            | ADMIN, OPERATOR|
     | 사용자 역할 수정          | `PUT`       | `/v1/auth/users/:id/role`       | ADMIN, OPERATOR|
