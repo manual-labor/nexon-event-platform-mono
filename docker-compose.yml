@@ -1,144 +1,149 @@
-version: '3.8'
 services:
-  mongo:
-    image: mongo:6.0
-    restart: always
-    command:
-      - --replSet
-      - rs0
-      - --bind_ip_all
+  mongo1:
+    image: mongo:5.0
+    container_name: mongo1
     ports:
-      - "${MONGO_PORT:-27017}:27017"
+      - "27017:27017"
     volumes:
-      - mongo-data:/data/db
-    healthcheck:
-      test: |
-        mongosh --eval "db.adminCommand('ping')" --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      - mongo_data1:/data/db
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    networks:
+      - app_network
+
+  mongo2:
+    image: mongo:5.0
+    container_name: mongo2
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data2:/data/db
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    networks:
+      - app_network
+
+  mongo3:
+    image: mongo:5.0
+    container_name: mongo3
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo_data3:/data/db
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    networks:
+      - app_network
 
   mongo-init:
-    image: mongo:6.0
-    depends_on:
-      mongo:
-        condition: service_healthy
-    entrypoint: ["bash", "-c"]
-    command: |
-      # MongoDB가 기동할 때까지 대기
-      until mongosh --host mongo:27017 --eval "print('ok')" --quiet; do
-        echo 'Waiting for MongoDB to be ready...';
-        sleep 2;
-      done;
-      # 복제 세트 초기화 전에 잠시 대기
-      sleep 10;
-      # rs.initiate() 호출 (단일 노드)
-      mongosh --host mongo:27017 --eval '
-        if (!rs.status().ok) {
-          rs.initiate({
-            _id: "rs0",
-            members: [{ _id: 0, host: "mongo:27017", priority: 1 }],
-            settings: {
-              chainingAllowed: true,
-              heartbeatTimeoutSecs: 2,
-              electionTimeoutMillis: 10000
-            }
-          });
-        }
-        # 복제 세트 상태 확인
-        while (!rs.status().ok || rs.status().members[0].state !== 1) {
-          print("Waiting for replica set to initialize...");
-          sleep(2000);
-        }
-        printjson(rs.status());
-        
-        # ReadConcern majority 문제 해결을 위한 설정
-        db = db.getSiblingDB("admin");
-        db.runCommand({ 
-          setDefaultRWConcern: 1,
-          defaultReadConcern: { level: "local" },
-          defaultWriteConcern: { w: 1 }
-        });
-        
-        # writeConcernMajorityJournalDefault 설정 비활성화
-        cfg = rs.config();
-        cfg.writeConcernMajorityJournalDefault = false;
-        rs.reconfig(cfg);'
-    restart: 'no'
-
-  auth:
     build:
       context: .
-      dockerfile: apps/auth/Dockerfile
-      platforms:
-        - linux/arm64
-    image: nexon-event-platform/auth:latest
+      dockerfile: ./mongo-init-docker/Dockerfile
+    container_name: mongo-init
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    command: >
+      bash -c "
+        mongosh --host mongo1:27017 --eval \"
+          try {
+            rs.status();
+            print('Replica set already initialized.');
+          } catch (e) {
+            rs.initiate({
+              _id: 'rs0',
+              members: [
+                { _id: 0, host: 'mongo1:27017' },
+                { _id: 1, host: 'mongo2:27017' },
+                { _id: 2, host: 'mongo3:27017' }
+              ]
+            });
+            print('Replica set initialized.');
+          }
+        \"
+      "
+    networks:
+      - app_network
+    restart: "no" # Run only once
+
+  redis:
+    image: redis:alpine
+    container_name: redis
     ports:
-      - "${AUTH_PORT:-3001}:3001"
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
+  auth_service:
+    build:
+      context: .
+      dockerfile: ./apps/auth/Dockerfile
+    container_name: auth_service
+    ports:
+      - ${AUTH_PORT:-3001}:3001
     environment:
-      - AUTH_SERVICE_HOST=auth
-      - AUTH_SERVICE_PORT=${AUTH_PORT:-3001}
-      - MONGODB_URI_AUTH=${MONGODB_URI_AUTH:-mongodb://mongo:27017/authdb?replicaSet=rs0&serverSelectionTimeoutMS=60000}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - JWT_SECRET=${JWT_SECRET}
+      - MONGODB_URI_AUTH=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/authdb?replicaSet=rs0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
     env_file:
       - .env
-    restart: on-failure:5
+
     depends_on:
       - mongo-init
       - redis
+    networks:
+      - app_network
 
-  event:
+  event_service:
     build:
       context: .
-      dockerfile: apps/event/Dockerfile
-      platforms:
-        - linux/arm64
-    image: nexon-event-platform/event:latest
+      dockerfile: ./apps/event/Dockerfile
+    container_name: event_service
     ports:
       - "${EVENT_PORT:-3002}:3002"
     environment:
-      - EVENT_SERVICE_HOST=event
-      - EVENT_SERVICE_PORT=${EVENT_PORT:-3002}
-      - MONGODB_URI_EVENT=${MONGODB_URI_EVENT:-mongodb://mongo:27017/eventdb?replicaSet=rs0&serverSelectionTimeoutMS=60000}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - JWT_SECRET=${JWT_SECRET}
+      - MONGODB_URI_EVENT=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/eventdb?replicaSet=rs0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
     env_file:
       - .env
-    restart: on-failure:5
+
     depends_on:
       - mongo-init
       - redis
+    networks:
+      - app_network
 
-  gateway:
+  gateway_service:
     build:
       context: .
-      dockerfile: apps/gateway/Dockerfile
-      platforms:
-        - linux/arm64
-    image: nexon-event-platform/gateway:latest
+      dockerfile: ./apps/gateway/Dockerfile
+    container_name: gateway_service
     ports:
-      - "${GATEWAY_PORT:-3000}:3000"
+      - "3000:3000" # Assuming gateway service runs on port 3000
+    depends_on:
+      - auth_service
+      - event_service
+    networks:
+      - app_network
     environment:
       - PORT=${GATEWAY_PORT:-3000}
-      - AUTH_SERVICE_HOST=auth
+      - AUTH_SERVICE_HOST=auth_service
       - AUTH_SERVICE_PORT=${AUTH_PORT:-3001}
-      - EVENT_SERVICE_HOST=event
+      - EVENT_SERVICE_HOST=event_service
       - EVENT_SERVICE_PORT=${EVENT_PORT:-3002}
       - JWT_SECRET=${JWT_SECRET}
     env_file:
       - .env
-    restart: on-failure:5
-    depends_on:
-      - auth
-      - event
 
-  redis:
-    image: redis:7-alpine
-    restart: always
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+networks:
+  app_network:
+    driver: bridge
 
 volumes:
-  mongo-data:
+  mongo_data1:
+  mongo_data2:
+  mongo_data3:
+  redis_data:

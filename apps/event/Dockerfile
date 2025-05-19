@@ -20,5 +20,5 @@ COPY --from=builder /workspace/node_modules ./node_modules
 
 ENV NODE_ENV=production
 
-EXPOSE 3001
+EXPOSE 3002
 CMD ["node", "main.js"]
