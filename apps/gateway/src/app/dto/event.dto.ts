@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsNotEmpty, IsBoolean, IsDateString, IsArray, IsEnum, IsObject, ValidateNested, IsNumber, IsMongoId } from 'class-validator';
 import { Type } from 'class-transformer';
-import { EventConditionType, EventStatus } from '../common/constants/enums';
+import { EventConditionType, EventStatus, RewardType } from '../common/constants/enums';
 import { UserRole } from '../../interfaces/user.interface'; // UserRole 경로는 실제 프로젝트 구조에 맞게 조정 필요
 import { ApiProperty } from '@nestjs/swagger';
 import { RewardResponseDto } from './reward.dto';
@@ -33,10 +33,10 @@ export class RewardDto {
   @IsNotEmpty()
   description!: string;
 
-  @ApiProperty({ description: '보상 유형', example: 'COUPON' })
-  @IsString()
+  @ApiProperty({ description: '보상 유형', enum: RewardType, required: false, example: RewardType.CASH })
+  @IsEnum(RewardType)
   @IsNotEmpty()
-  type!: string;
+  type!: RewardType;
 
   @ApiProperty({ description: '보상 수량', type: Number, example: 1 })
   @IsNumber()

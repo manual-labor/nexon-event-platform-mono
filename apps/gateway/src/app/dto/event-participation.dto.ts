@@ -2,7 +2,7 @@ import { IsEmail, IsNotEmpty, IsMongoId, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class FriendInviteDto {
-  @ApiProperty({ description: '초대를 받았던 유저 Email', example: 'inviter@example.com' })
+  @ApiProperty({ description: '초대를 한 유저 Email', example: 'inviter@example.com' })
   @IsEmail()
   @IsNotEmpty()
   inviterEmail!: string;

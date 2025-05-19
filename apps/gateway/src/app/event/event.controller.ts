@@ -13,7 +13,7 @@ import { RequestUser } from '../interfaces/request-user.interface';
 import { FriendInviteDto } from '../dto/event-participation.dto';
 import { AttendanceResponseDto as EventServiceAttendanceResponseDto } from '../dto/attendance.dto';
 import { FriendInviteResponseDto as EventServiceFriendInviteResponseDto } from '../dto/friend.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -69,6 +69,7 @@ export class EventController {
   @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   @Post()
   @ApiOperation({ summary: '새 이벤트 생성 (운영자/관리자)' })
+  @ApiBody({ type: EventDto })
   @ApiResponse({ status: 201, description: '이벤트 생성 성공', type: EventServiceEventResponseDto })
   @ApiResponse({ status: 400, description: '잘못된 요청 형식' })
   @ApiResponse({ status: 401, description: '인증 실패' })
@@ -87,6 +88,7 @@ export class EventController {
   @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   @Put(':eventId')
   @ApiOperation({ summary: '이벤트 정보 수정 (운영자/관리자)' })
+  @ApiBody({ type: EventDto })
   @ApiResponse({ status: 200, description: '이벤트 정보 수정 성공', type: EventServiceEventResponseDto })
   @ApiResponse({ status: 400, description: '잘못된 요청 형식' })
   @ApiResponse({ status: 401, description: '인증 실패' })
@@ -111,6 +113,7 @@ export class EventController {
   @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   @Post(':eventId/rewards')
   @ApiOperation({ summary: '이벤트에 보상 추가 (운영자/관리자)', description: '하나 이상의 보상을 배열로 추가합니다.' })
+  @ApiBody({ type: [RewardDto], description: '추가할 보상 정보 배열' })
   @ApiResponse({ status: 201, description: '보상 추가 성공', type: [EventServiceRewardResponseDto] })
   @ApiResponse({ status: 400, description: '잘못된 요청 형식' })
   @ApiResponse({ status: 401, description: '인증 실패' })
@@ -135,6 +138,7 @@ export class EventController {
   @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   @Put(':eventId/rewards/:rewardId')
   @ApiOperation({ summary: '이벤트 보상 정보 수정 (운영자/관리자)' })
+  @ApiBody({ type: RewardDto, description: '수정할 보상 정보 (부분 업데이트 가능)' })
   @ApiResponse({ status: 200, description: '보상 정보 수정 성공', type: EventServiceRewardResponseDto })
   @ApiResponse({ status: 400, description: '잘못된 요청 형식' })
   @ApiResponse({ status: 401, description: '인증 실패' })
@@ -161,6 +165,7 @@ export class EventController {
   @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   @Patch('rewards/history/:historyId/status')
   @ApiOperation({ summary: '보상 지급 내역 상태 변경 (운영자/관리자)' })
+  @ApiBody({ type: UpdateRewardHistoryStatusDto })
   @ApiResponse({ status: 200, description: '보상 지급 내역 상태 변경 성공', type: EventServiceRewardHistoryResponseDto })
   @ApiResponse({ status: 400, description: '잘못된 요청 형식' })
   @ApiResponse({ status: 401, description: '인증 실패' })
@@ -184,7 +189,7 @@ export class EventController {
 
   @Get('rewards/history')
   @ApiOperation({ summary: '보상 지급 내역 조회 (운영자/관리자/감사자/유저)', description: '관리자, 운영자, 감시자는 모든 내역 조회 가능, 일반 유저는 본인 내역만 조회.' })
-  @ApiQuery({ name: 'userId', required: false, description: '사용자 ID (관리자/운영자만 필터링 가능)', type: String })
+  @ApiQuery({ name: 'userId', required: false, description: '사용자 ID (관리자/운영자/감시자만 필터링 가능)', type: String })
   @ApiQuery({ name: 'eventId', required: false, description: '이벤트 ID (필터링용)', type: String })
   @ApiResponse({ status: 200, description: '보상 지급 내역 조회 성공', type: [EventServiceRewardHistoryResponseDto] })
   @ApiResponse({ status: 401, description: '인증 실패' })
@@ -212,6 +217,7 @@ export class EventController {
   @Roles(UserRole.USER, UserRole.ADMIN)
   @Post('participation/invite-friends')
   @ApiOperation({ summary: '친구 초대 (사용자/관리자)' })
+  @ApiBody({ type: FriendInviteDto })
   @ApiResponse({ status: 201, description: '친구 초대 성공 또는 요청 처리됨', type: EventServiceFriendInviteResponseDto })
   @ApiResponse({ status: 400, description: '잘못된 요청 형식' })
   @ApiResponse({ status: 401, description: '인증 실패' })
