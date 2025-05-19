@@ -18,7 +18,8 @@ WORKDIR /app
 COPY --from=builder /workspace/apps/event/dist ./
 COPY --from=builder /workspace/node_modules ./node_modules
 
-ENV NODE_ENV=production
+ARG NODE_ENV
+ENV NODE_ENV=${NODE_ENV}
 
 EXPOSE 3002
 CMD ["node", "main.js"]

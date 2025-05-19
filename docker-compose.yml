@@ -76,6 +76,8 @@ services:
     build:
       context: .
       dockerfile: ./apps/auth/Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV:-development}
     container_name: auth_service
     ports:
       - ${AUTH_PORT:-3001}:3001
@@ -97,6 +99,8 @@ services:
     build:
       context: .
       dockerfile: ./apps/event/Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV:-development}
     container_name: event_service
     ports:
       - "${EVENT_PORT:-3002}:3002"
@@ -118,6 +122,8 @@ services:
     build:
       context: .
       dockerfile: ./apps/gateway/Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV:-development}
     container_name: gateway_service
     ports:
       - "3000:3000" # Assuming gateway service runs on port 3000
