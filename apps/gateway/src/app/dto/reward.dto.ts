@@ -65,7 +65,7 @@ export class UpdateRewardDto {
 export class RewardResponseDto {
   @ApiProperty({ description: '보상 ID', example: '60b8d295f1d2e2001c8b456a' })
   @IsMongoId()
-  id!: string;
+  rewardId!: string;
 
   @ApiProperty({ description: '이벤트 ID', example: '60b8d295f1d2e2001c8b4567' })
   @IsMongoId()
@@ -119,7 +119,7 @@ export class RequestRewardDto {
 export class RewardHistoryResponseDto {
   @ApiProperty({ description: '보상 지급 내역 ID', example: '60b8d295f1d2e2001c8b456b' })
   @IsMongoId()
-  id!: string;
+  historyId!: string;
 
   @ApiProperty({ description: '사용자 ID', example: '60b8d295f1d2e2001c8b4568' })
   @IsMongoId()

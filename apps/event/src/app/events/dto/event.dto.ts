@@ -104,7 +104,7 @@ export class UpdateEventDto {
 export class EventResponseDto {
   @ApiProperty({ description: '이벤트 ID', example: '60b8d295f1d2e2001c8b456e' })
   @IsMongoId()
-  id!: string;
+  eventId!: string;
   
   @ApiProperty({ description: '이벤트 제목', example: '새해 맞이 출석 이벤트' })
   @IsString()

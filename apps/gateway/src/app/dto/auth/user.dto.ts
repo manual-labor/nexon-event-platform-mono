@@ -6,7 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UserResponseDto {
   @ApiProperty({ description: '사용자 ID', example: '60b8d295f1d2e2001c8b4567' })
   @IsMongoId()
-  id!: string;
+  userId!: string;
 
   @ApiProperty({ description: '사용자 이메일', example: 'user@example.com' })
   @IsEmail()

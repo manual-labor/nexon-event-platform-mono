@@ -265,14 +265,14 @@ export class EventsService {
               input: '$rewards',
               as: 'r',
               in: {
-                id: { $toString: '$$r.id' },
+                historyId: { $toString: '$$r.id' },
                 userId: { $toString: '$$r.userId' },
                 rewardId: { $toString: '$$r.rewardId' },
                 status: '$$r.status',
                 rewardAt: '$$r.rewardAt',
                 createdAt: '$$r.createdAt',
                 rewardDetails: {
-                  id: { $toString: '$$r.rewardDetails.id' },
+                  rewardId: { $toString: '$$r.rewardDetails.id' },
                   name: '$$r.rewardDetails.name',
                   type: '$$r.rewardDetails.type',
                   quantity: '$$r.rewardDetails.quantity',
@@ -331,7 +331,7 @@ export class EventsService {
     const { condition, ...eventData } = event.toObject();
     
     return {
-      id: event.id,
+      eventId: event.id,
       title: event.title,
       description: event.description,
       status: event.status,
@@ -347,19 +347,21 @@ export class EventsService {
 
   private mapRewardToDto(reward: RewardDocumentWithTimestamps): RewardResponseDto {
     return {
-      id: reward.id,
+      rewardId: reward.id.toString(),
       eventId: reward.eventId.toString(),
       name: reward.name,
       type: reward.type,
       quantity: reward.quantity,
       description: reward.description,
       unitValue: reward.unitValue,
+      createdAt: reward.createdAt,
+      updatedAt: reward.updatedAt,
     };
   }
 
   private mapRewardHistoryToDto(history: RewardHistoryDocument): RewardHistoryResponseDto {
     return {
-      id: history.id.toString(),
+      historyId: history.id.toString(),
       userId: history.userId.toString(),
       eventId: history.eventId.toString(),
       rewardId: history.rewardId.toString(),

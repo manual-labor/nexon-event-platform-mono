@@ -51,7 +51,7 @@ export class RewardDto {
   @ApiProperty({ description: '보상 가치 (현금 등)', type: Number, required: false, example: 1000 })
   @IsNumber()
   @IsOptional()
-  value?: number;
+  unitValue?: number;
 
   @ApiProperty({ description: '추가 메타데이터', type: Object, required: false, example: { grade: 'rare' } })
   @IsObject()
@@ -120,11 +120,10 @@ export class UpdateRewardHistoryStatusDto {
   status!: RewardHistoryStatus;
 }
 
-
 export class EventResponseDto {
   @ApiProperty({ description: '이벤트 ID', example: '60b8d295f1d2e2001c8b456e' })
   @IsMongoId()
-  id!: string;
+  eventId!: string;
   
   @ApiProperty({ description: '이벤트 제목', example: '새해 맞이 출석 이벤트' })
   @IsString()

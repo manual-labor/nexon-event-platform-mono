@@ -50,7 +50,7 @@ export class RewardDto {
   @ApiProperty({ description: '보상 가치 (현금 등)', type: Number, required: false, example: 1000 })
   @IsNumber()
   @IsOptional()
-  value?: number;
+  unitValue?: number;
 
   @ApiProperty({ description: '추가 메타데이터', type: Object, required: false, example: { grade: 'rare' } })
   @IsObject()

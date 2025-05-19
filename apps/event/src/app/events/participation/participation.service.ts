@@ -222,7 +222,7 @@ export class ParticipationService {
 
   private mapRewardToDto(reward: RewardDocumentWithTimestamps): RewardResponseDto {
     return {
-      id: reward._id.toString(),
+      rewardId: reward._id.toString(),
       eventId: reward.eventId.toString(),
       name: reward.name,
       type: reward.type,
@@ -251,7 +251,7 @@ export class ParticipationService {
   // RewardHistory를 DTO로 매핑하는 헬퍼 메서드
   private mapRewardHistoryToDto(history: RewardHistoryDocument & BaseDocument): RewardHistoryResponseDto {
     return {
-      id: (history._id as Types.ObjectId).toString(),
+      historyId: (history._id as Types.ObjectId).toString(),
       userId: (history.userId as Types.ObjectId).toString(),
       eventId: (history.eventId as Types.ObjectId).toString(),
       rewardId: (history.rewardId as Types.ObjectId).toString(),
