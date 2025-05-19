@@ -13,7 +13,7 @@ services:
       - mongo-data:/data/db
     healthcheck:
       test: |
-        mongo --eval "db.adminCommand('ping')" --quiet
+        mongosh --eval "db.adminCommand('ping')" --quiet
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,14 +27,14 @@ services:
     entrypoint: ["bash", "-c"]
     command: |
       # MongoDB가 기동할 때까지 대기
-      until mongo --host mongo:27017 --eval "print('ok')" --quiet; do
+      until mongosh --host mongo:27017 --eval "print('ok')" --quiet; do
         echo 'Waiting for MongoDB to be ready...';
         sleep 2;
       done;
       # 복제 세트 초기화 전에 잠시 대기
       sleep 10;
       # rs.initiate() 호출 (단일 노드)
-      mongo --host mongo:27017 --eval '
+      mongosh --host mongo:27017 --eval '
         if (!rs.status().ok) {
           rs.initiate({
             _id: "rs0",
@@ -51,7 +51,15 @@ services:
           print("Waiting for replica set to initialize...");
           sleep(2000);
         }
-        printjson(rs.status());'
+        printjson(rs.status());
+        
+        # ReadConcern majority 문제 해결을 위한 설정
+        db = db.getSiblingDB("admin");
+        db.runCommand({ 
+          setDefaultRWConcern: 1,
+          defaultReadConcern: { level: "local" },
+          defaultWriteConcern: { w: 1 }
+        });'
     restart: 'no'
 
   auth:
