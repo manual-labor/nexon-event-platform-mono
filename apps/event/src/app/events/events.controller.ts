@@ -30,8 +30,8 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @MessagePattern({ cmd: 'get-events' })
-  async getEventsList(): Promise<EventResponseDto[]> {
-    return this.eventsService.getEventsList();
+  async getEventsList(@Payload() data: { user?: { role: UserRole }, status?: string }): Promise<EventResponseDto[]> {
+    return this.eventsService.getEventsList(data?.user?.role, data?.status);
   }
 
   @MessagePattern({ cmd: 'get-event-detail' })

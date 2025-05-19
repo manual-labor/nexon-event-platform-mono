@@ -21,11 +21,11 @@ export class EventController {
   ) { }
 
   @Get()
-  async getEvents() {
+  async getEvents(@Request() req: { user: RequestUser }, @Query('status') status?: string) {
     return this.rpcClientProxyService.send(
       this.eventClient,
       { cmd: 'get-events' },
-      {}
+      { user: req.user, status }
     );
   }
 

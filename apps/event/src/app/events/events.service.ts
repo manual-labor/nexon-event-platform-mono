@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Model, Document, Types, Connection, PipelineStage } from 'mongoose';
-import { InjectConnection } from '@nestjs/mongoose';
 import { Event, EventDocument, EventStatus, EventConditionType } from './schemas/event.schema';
 import { Reward, RewardDocument, RewardHistory, RewardHistoryDocument, RewardType } from './schemas/reward.schema';
 import { Friend, FriendDocument } from './schemas/friend.schema';
@@ -48,8 +47,18 @@ export class EventsService {
   ) {}
 
   // 이벤트 목록 조회
-  async getEventsList(): Promise<EventResponseDto[]> {
-    const events = await this.eventModel.find({}).sort({ createdAt: -1 }).exec();
+  async getEventsList(userRole?: UserRole, status?: string): Promise<EventResponseDto[]> {
+    const query: Record<string, any> = {};
+    
+    if (userRole === UserRole.USER) {
+      query.status = { $nin: [EventStatus.INACTIVE, EventStatus.CANCELED] };
+    }
+
+    if (status && Object.values(EventStatus).includes(status as EventStatus)) {
+      query.status = status;
+    }
+
+    const events = await this.eventModel.find(query).sort({ createdAt: -1 }).exec();
     return events.map(event => this.mapEventToDto(event));
   }
 

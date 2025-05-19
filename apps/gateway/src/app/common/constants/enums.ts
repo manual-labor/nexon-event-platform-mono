@@ -3,6 +3,7 @@ export enum EventStatus {
     ONGOING = 'ONGOING',       // 진행 중
     ENDED = 'ENDED',           // 진행 종료
     CANCELED = 'CANCELED',     // 취소됨
+    INACTIVE = 'INACTIVE',     // 비활성화됨
   }
   
 export enum EventConditionType {
