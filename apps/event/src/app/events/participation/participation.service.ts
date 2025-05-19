@@ -228,6 +228,7 @@ export class ParticipationService {
       type: reward.type,
       quantity: reward.quantity,
       description: reward.description,
+      unitValue: reward.unitValue,
     };
   }
 

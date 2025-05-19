@@ -233,6 +233,7 @@ export class EventsService {
             type: '$rewardDetails.type',
             quantity: '$rewardDetails.quantity',
             description: '$rewardDetails.description',
+            unitValue: '$rewardDetails.unitValue',
           },
           eventTitle: '$eventDetails.title',
         },
@@ -276,6 +277,7 @@ export class EventsService {
                   type: '$$r.rewardDetails.type',
                   quantity: '$$r.rewardDetails.quantity',
                   description: '$$r.rewardDetails.description',
+                  unitValue: '$$r.rewardDetails.unitValue',
                 },
               },
             },
@@ -351,6 +353,7 @@ export class EventsService {
       type: reward.type,
       quantity: reward.quantity,
       description: reward.description,
+      unitValue: reward.unitValue,
     };
   }
 

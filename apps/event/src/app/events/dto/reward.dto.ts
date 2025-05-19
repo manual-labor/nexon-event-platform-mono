@@ -22,6 +22,10 @@ export class CreateRewardDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsNumber()
+  @IsOptional()
+  unitValue?: number;
 }
 
 export class UpdateRewardDto {
@@ -40,6 +44,10 @@ export class UpdateRewardDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsNumber()
+  @IsOptional()
+  unitValue?: number;
 }
 
 export class RewardResponseDto {
@@ -61,6 +69,10 @@ export class RewardResponseDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsNumber()
+  @IsOptional()
+  unitValue?: number;
 
   @IsDate()
   @IsOptional()

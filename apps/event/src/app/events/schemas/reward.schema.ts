@@ -33,6 +33,9 @@ export class Reward {
   @Prop()
   description!: string;
 
+  @Prop({ type: Number })
+  unitValue?: number;
+
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   createdBy!: string;
 }
