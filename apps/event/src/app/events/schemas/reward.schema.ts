@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Types } from 'mongoose';
 
 export enum RewardType {
   POINT = 'POINT',       // 포인트
@@ -7,6 +8,12 @@ export enum RewardType {
   COUPON = 'COUPON',     // 쿠폰
   CASH = 'CASH',         // 현금/캐시
   CUSTOM = 'CUSTOM',     // 기타
+}
+
+export enum RewardHistoryStatus {
+  PENDING = 'PENDING',    // 확인 중
+  SUCCESS = 'SUCCESS',    // 보상 성공
+  FAILURE = 'FAILURE',    // 보상 실패
 }
 
 @Schema({ timestamps: true })
@@ -31,24 +38,28 @@ export class Reward {
 }
 
 @Schema({ timestamps: true })
-export class RewardHistory {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
-  userId!: string;
+export class RewardHistory extends Document {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId!: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Event', required: true })
-  eventId!: string;
+  @Prop({ type: Types.ObjectId, ref: 'Event', required: true })
+  eventId!: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Reward', required: true })
-  rewardId!: string;
+  @Prop({ type: Types.ObjectId, ref: 'Reward', required: true })
+  rewardId!: Types.ObjectId;
 
-  @Prop({ default: false })
-  claimed!: boolean;
+  @Prop({ type: String, enum: Object.values(RewardHistoryStatus), required: true, default: RewardHistoryStatus.PENDING })
+  status!: RewardHistoryStatus;
 
   @Prop({ type: Date, default: null })
-  claimedAt!: Date;
+  rewardAt?: Date | null; // 보상 획득 시간 (성공 시)
+
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
 export const RewardSchema = SchemaFactory.createForClass(Reward);
 export type RewardDocument = Reward & Document;
 
-export const RewardHistorySchema = SchemaFactory.createForClass(RewardHistory);export type RewardHistoryDocument = RewardHistory & Document;
+export const RewardHistorySchema = SchemaFactory.createForClass(RewardHistory);
+export type RewardHistoryDocument = RewardHistory & Document;

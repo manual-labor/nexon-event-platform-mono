@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsMongoId } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsMongoId, IsString } from 'class-validator';
 
 export class FriendInviteDto {
   @IsEmail()
@@ -7,11 +7,11 @@ export class FriendInviteDto {
 }
 
 export class RequestRewardDto {
-  @IsMongoId()
+  @IsString()
   @IsNotEmpty()
   eventId!: string;
 
-  @IsMongoId()
+  @IsString()
   @IsNotEmpty()
   rewardId!: string;
 } 

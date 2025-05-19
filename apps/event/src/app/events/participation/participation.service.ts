@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, ConflictException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Document, Types } from 'mongoose';
 import { Event, EventDocument, EventStatus, EventConditionType } from '../schemas/event.schema';
-import { Reward, RewardDocument, RewardHistory, RewardHistoryDocument } from '../schemas/reward.schema';
+import { Reward, RewardDocument, RewardHistory, RewardHistoryDocument, RewardHistoryStatus } from '../schemas/reward.schema';
 import { Friend, FriendDocument } from '../schemas/friend.schema';
 import { Attendance, AttendanceDocument } from '../schemas/attendance.schema';
 import { 
@@ -15,7 +15,7 @@ import {
 } from '../../common/exceptions/app-exception';
 import { FriendInviteRequestDto, FriendInviteResponseDto } from '../dto/friend.dto';
 import { AttendanceResponseDto } from '../dto/attendance.dto';
-import { RewardResponseDto, RequestRewardDto } from '../dto/reward.dto';
+import { RewardResponseDto, RequestRewardDto, RewardHistoryResponseDto } from '../dto/reward.dto';
 import { AuthClientService } from '../../gateway-client/auth-client.service';
 
 interface BaseDocument extends Document {
@@ -112,52 +112,45 @@ export class ParticipationService {
   }
 
   // 보상 신청
-  async requestReward(requestData: RequestRewardDto, userId: string) {
+  async requestReward(requestData: RequestRewardDto, userId: string): Promise<RewardHistoryResponseDto> {
     const { eventId, rewardId } = requestData;
     
-    // 이벤트와 보상이 존재하는지 확인
     const event = await this.findEventById(eventId);
     const reward = await this.findRewardById(rewardId);
     
-    // 이벤트가 활성 상태인지 확인
     if (event.status !== EventStatus.ONGOING) {
-      throw new EventInactiveException();
+      throw new EventInactiveException('진행 중인 이벤트가 아닙니다.');
     }
     
-    // 이벤트 기간이 유효한지 확인
     const now = new Date();
     if (now < event.startDate || now > event.endDate) {
-      throw new EventPeriodException();
+      throw new EventPeriodException('이벤트 기간이 아닙니다.');
     }
     
-    // 이미 보상을 받았는지 확인
     const existingHistory = await this.rewardHistoryModel.findOne({
-      userId,
-      eventId,
-      rewardId,
+      userId: new Types.ObjectId(userId),
+      eventId: new Types.ObjectId(eventId),
+      rewardId: new Types.ObjectId(rewardId),
     }).exec();
     
     if (existingHistory) {
-      throw new RewardAlreadyClaimedException();
+      throw new RewardAlreadyClaimedException('이미 보상을 요청했거나 지급받았습니다.');
     }
     
-    // 조건을 충족했는지 확인
+    // 이벤트 조건을 충족했는지 확인
     await this.validateEventConditions(event, userId);
     
+    const newRewardHistory = new this.rewardHistoryModel({
+      userId: new Types.ObjectId(userId),
+      eventId: new Types.ObjectId(eventId),
+      rewardId: new Types.ObjectId(rewardId),
+      status: RewardHistoryStatus.PENDING, 
+      rewardAt: null,
+    });
     
-    await new this.rewardHistoryModel({
-      userId,
-      eventId,
-      rewardId,
-      claimed: true,
-      claimedAt: new Date(),
-    }).save();
+    const savedHistory = await newRewardHistory.save();
     
-    return {
-      success: true,
-      message: '보상이 성공적으로 지급되었습니다.',
-      reward: this.mapRewardToDto(reward),
-    };
+    return this.mapRewardHistoryToDto(savedHistory);
   }
 
   // 이벤트 조건 검증
@@ -251,6 +244,19 @@ export class ParticipationService {
       userId: attendance.userId.toString(),
       attendanceDate: attendance.attendanceDate,
       consecutiveDays: attendance.consecutiveDays,
+    };
+  }
+
+  // RewardHistory를 DTO로 매핑하는 헬퍼 메서드
+  private mapRewardHistoryToDto(history: RewardHistoryDocument & BaseDocument): RewardHistoryResponseDto {
+    return {
+      id: (history._id as Types.ObjectId).toString(),
+      userId: (history.userId as Types.ObjectId).toString(),
+      eventId: (history.eventId as Types.ObjectId).toString(),
+      rewardId: (history.rewardId as Types.ObjectId).toString(),
+      status: history.status as RewardHistoryStatus,
+      rewardAt: history.rewardAt,
+      createdAt: history.createdAt,
     };
   }
 }

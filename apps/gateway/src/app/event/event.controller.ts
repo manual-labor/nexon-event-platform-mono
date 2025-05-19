@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Request, UseGuards, Patch } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Roles } from '../decorators/roles.decorator';
@@ -7,9 +7,9 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { RpcClientProxyService} from '../services/rpc-client-proxy.service';
 import { RoleValidationService } from '../services/role-validation.service';
-import { EventDto, RewardDto } from '../dto/event.dto';
+import { EventDto, RewardDto, UpdateRewardHistoryStatusDto } from '../dto/event.dto';
 import { RequestUser } from '../interfaces/request-user.interface';
-import { FriendInviteDto } from '../dto/event-participation.dto';
+import { FriendInviteDto, RequestRewardDto } from '../dto/event-participation.dto';
 
 @Controller('event')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -111,6 +111,24 @@ export class EventController {
         id: rewardId,
         eventId,
         rewardData,
+        user: req.user
+      }
+    );
+  }
+
+  @Roles(UserRole.OPERATOR, UserRole.ADMIN)
+  @Patch('rewards/history/:historyId/status')
+  async updateRewardHistoryStatus(
+    @Param('historyId') historyId: string,
+    @Body() statusData: UpdateRewardHistoryStatusDto,
+    @Request() req: { user: RequestUser }
+  ) {
+    return this.rpcClientProxyService.send(
+      this.eventClient,
+      { cmd: 'update-reward-history-status' },
+      {
+        historyId,
+        statusData,
         user: req.user
       }
     );

@@ -1,6 +1,7 @@
 import { IsString, IsOptional, IsNotEmpty, IsBoolean, IsDateString, IsArray, IsEnum, IsObject, ValidateNested, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { EventConditionType } from '../common/constants/enums';
+import { UserRole } from '../../interfaces/user.interface'; // UserRole 경로는 실제 프로젝트 구조에 맞게 조정 필요
 
 export class EventConditionDto {
   @IsEnum(EventConditionType)
@@ -83,4 +84,16 @@ export class EventDto {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
+}
+
+export enum RewardHistoryStatus {
+  PENDING = 'PENDING',
+  SUCCESS = 'SUCCESS',
+  FAILURE = 'FAILURE',
+}
+
+export class UpdateRewardHistoryStatusDto {
+  @IsEnum(RewardHistoryStatus)
+  @IsNotEmpty()
+  status!: RewardHistoryStatus;
 }

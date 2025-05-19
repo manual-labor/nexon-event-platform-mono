@@ -12,7 +12,9 @@ import {
   UpdateRewardDto, 
   RewardResponseDto,
   RequestRewardDto,
-  EventRewardHistoryResponseDto
+  RewardHistoryResponseDto,
+  EventRewardHistoryResponseDto,
+  UpdateRewardHistoryStatusDto
 } from './dto/reward.dto';
 import { AttendanceResponseDto } from './dto/attendance.dto';
 import { FriendInviteRequestDto, FriendInviteResponseDto } from './dto/friend.dto';
@@ -66,6 +68,15 @@ export class EventsController {
   @MessagePattern({ cmd: 'get-event-rewards' })
   async getEventRewards(@Payload() data: { eventId: string }): Promise<RewardResponseDto[]> {
     return this.eventsService.getEventRewards(data.eventId);
+  }
+
+  @MessagePattern({ cmd: 'update-reward-history-status' })
+  async updateRewardHistoryStatus(@Payload() data: { 
+    historyId: string; 
+    statusData: UpdateRewardHistoryStatusDto; 
+    user: UserPayload 
+  }): Promise<RewardHistoryResponseDto> {
+    return this.eventsService.updateRewardHistoryStatus(data.historyId, data.statusData, data.user.id);
   }
 
   @MessagePattern({ cmd: 'get-reward-history' })

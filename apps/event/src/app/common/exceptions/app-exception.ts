@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, ConflictException, NotFoundException } from '@nestjs/common';
 import { ErrorCode, ERROR_CODES } from '../constants/error-codes';
 
 /**
@@ -59,9 +59,9 @@ export class EventNotFoundException extends AppException {
 /**
  * 보상을 이미 받았을 때 발생하는 예외
  */
-export class RewardAlreadyClaimedException extends AppException {
-  constructor(message = '이미 보상을 받았습니다', details?: Record<string, any>) {
-    super('REWARD_ALREADY_CLAIMED', message, HttpStatus.BAD_REQUEST, details);
+export class RewardAlreadyClaimedException extends ConflictException {
+  constructor(message = '이미 보상을 받았습니다.', details?: Record<string, any>) {
+    super({ message, details, errorCode: 'REWARD_ALREADY_CLAIMED' });
   }
 }
 
@@ -116,5 +116,11 @@ export class UserNotFoundException extends AppException {
 export class ServiceCommunicationException extends AppException {
   constructor(message = '서비스 통신 중 오류가 발생했습니다', details?: Record<string, any>) {
     super('SERVICE_COMMUNICATION_ERROR', message, HttpStatus.INTERNAL_SERVER_ERROR, details);
+  }
+}
+
+export class RewardHistoryNotFoundException extends NotFoundException {
+  constructor(message = '보상 지급 내역을 찾을 수 없습니다.', details?: Record<string, any>) {
+    super({ message, details, errorCode: 'REWARD_HISTORY_NOT_FOUND' });
   }
 } 
