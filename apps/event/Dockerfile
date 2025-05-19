@@ -3,13 +3,13 @@ FROM --platform=${BUILDPLATFORM:-linux/amd64} node:18-alpine AS builder
 WORKDIR /workspace
 
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm nx && pnpm fetch
+RUN npm install -g pnpm && pnpm fetch
 
-COPY apps/event/package.json apps/event/
-RUN pnpm install --frozen-lockfile --filter "@nexon-event-platform-mono/event...*"
+# 전체 패키지 설치
+RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm build event
+RUN pnpm build:event
 
 # Runner stage
 FROM --platform=${TARGETPLATFORM:-linux/amd64} node:18-alpine AS runner
