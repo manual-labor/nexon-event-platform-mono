@@ -1,5 +1,5 @@
 import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
-import { UserRole } from '../../interfaces/user.interface';
+import { UserRole } from '../../../interfaces/user.interface';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserDto {

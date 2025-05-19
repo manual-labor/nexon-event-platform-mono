@@ -1,7 +1,7 @@
-import { IsString, IsEmail, IsNotEmpty, IsOptional, IsEnum, IsDate, IsMongoId, MinLength } from 'class-validator';
-import { Type } from 'class-transformer';
-import { UserRole, UserProvider } from '../../interfaces/user.interface';
+import { IsString, IsEmail, IsNotEmpty, IsOptional, MinLength, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserRole } from '../../../interfaces/user.interface';
+import { UserResponseDto } from './user.dto';
 
 export class LoginDto {
   @ApiProperty({ description: '사용자 이메일', example: 'user@example.com' })
@@ -12,45 +12,42 @@ export class LoginDto {
   @ApiProperty({ description: '사용자 비밀번호', example: 'password123!' })
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
   password!: string;
 }
 
-export class UserResponseDto {
-  @ApiProperty({ description: '사용자 ID', example: '60b8d295f1d2e2001c8b4567' })
-  @IsMongoId()
-  id!: string;
-
+export class RegisterDto {
   @ApiProperty({ description: '사용자 이메일', example: 'user@example.com' })
   @IsEmail()
+  @IsNotEmpty()
   email!: string;
+
+  @ApiProperty({ description: '사용자 비밀번호', example: 'password123!' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  password!: string;
 
   @ApiProperty({ description: '사용자 닉네임', example: '홍길동' })
   @IsString()
+  @IsNotEmpty()
+  @MinLength(2)
+  @MaxLength(30)
   nickname!: string;
 
-  @ApiProperty({ description: '사용자 역할', enum: UserRole, example: UserRole.USER })
-  @IsEnum(UserRole)
-  role!: UserRole;
-
-  @ApiProperty({ description: 'OAuth 제공자', enum: UserProvider, example: UserProvider.LOCAL })
-  @IsEnum(UserProvider)
-  provider!: UserProvider;
-
-  @ApiProperty({ description: '마지막 로그인 일시', type: Date, required: false, example: '2023-01-01T12:00:00.000Z' })
-  @IsDate()
+  @ApiProperty({ description: 'OAuth 제공자 (google, kakao 등)', example: 'google', required: false })
+  @IsString()
   @IsOptional()
-  lastLogin?: Date;
-
-  @ApiProperty({ description: '생성 일시', type: Date, required: false, example: '2023-01-01T00:00:00.000Z' })
-  @IsDate()
-  @IsOptional()
-  createdAt?: Date;
-
-  @ApiProperty({ description: '수정 일시', type: Date, required: false, example: '2023-01-02T00:00:00.000Z' })
-  @IsDate()
-  @IsOptional()
-  updatedAt?: Date;
+  provider?: string;
 }
+
+export class TokenDto {
+  @ApiProperty({ description: 'JWT 토큰', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+  @IsString()
+  @IsNotEmpty()
+  token!: string;
+} 
+
 
 export class AuthResponseDto {
   @ApiProperty({ description: '액세스 토큰', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
@@ -64,6 +61,7 @@ export class AuthResponseDto {
     role: UserRole;
   };
 }
+
 
 export class TokenValidationDto {
   @ApiProperty({ description: '검증할 토큰', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })

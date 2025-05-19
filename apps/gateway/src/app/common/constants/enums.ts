@@ -12,3 +12,16 @@ export enum EventConditionType {
     INVITE_FRIEND = 'INVITE_FRIEND',    // 친구 초대
 }
   
+export enum RewardType {
+  POINT = 'POINT',       // 포인트
+  ITEM = 'ITEM',         // 아이템
+  COUPON = 'COUPON',     // 쿠폰
+  CASH = 'CASH',         // 현금/캐시
+  CUSTOM = 'CUSTOM',     // 기타
+}
+
+export enum RewardHistoryStatus {
+  PENDING = 'PENDING',    // 확인 중
+  SUCCESS = 'SUCCESS',    // 보상 성공
+  FAILURE = 'FAILURE',    // 보상 실패
+}

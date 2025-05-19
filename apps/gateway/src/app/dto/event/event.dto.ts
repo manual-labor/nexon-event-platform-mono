@@ -1,9 +1,8 @@
 import { IsString, IsOptional, IsNotEmpty, IsBoolean, IsDateString, IsArray, IsEnum, IsObject, ValidateNested, IsNumber, IsMongoId } from 'class-validator';
 import { Type } from 'class-transformer';
-import { EventConditionType, EventStatus } from '../common/constants/enums';
-import { UserRole } from '../../interfaces/user.interface'; // UserRole 경로는 실제 프로젝트 구조에 맞게 조정 필요
+import { EventConditionType, EventStatus } from '../../common/constants/enums';
 import { ApiProperty } from '@nestjs/swagger';
-import { RewardResponseDto } from './reward.dto';
+import { RewardResponseDto } from '../reward.dto';
 
 export class EventConditionDto {
   @ApiProperty({ description: '이벤트 조건 유형', enum: EventConditionType, example: EventConditionType.PARTICIPATION_VERIFICATION })
@@ -16,24 +15,24 @@ export class EventConditionDto {
   @IsNotEmpty()
   value!: number;
 
-  @ApiProperty({ description: '이벤트 조건 설명', required: false, example: '친구 초대 7명 이상' })
+  @ApiProperty({ description: '이벤트 조건 설명', required: false, example: '최소 레벨 10 이상' })
   @IsString()
   @IsOptional()
   description?: string;
 }
 
 export class RewardDto {
-  @ApiProperty({ description: '보상 이름', example: '넥슨 캐시 1000원권' })
+  @ApiProperty({ description: '보상 이름', example: '경험치 물약' })
   @IsString()
   @IsNotEmpty()
   name!: string;
 
-  @ApiProperty({ description: '보상 설명', example: '넥슨 캐시 1000원권 1개' })
+  @ApiProperty({ description: '보상 설명', example: '사용 시 경험치 1000 획득' })
   @IsString()
   @IsNotEmpty()
   description!: string;
 
-  @ApiProperty({ description: '보상 유형', example: 'COUPON' })
+  @ApiProperty({ description: '보상 유형', example: 'ITEM' })
   @IsString()
   @IsNotEmpty()
   type!: string;

@@ -1,7 +1,7 @@
 import { IsString, IsNotEmpty, IsOptional, IsNumber, IsEnum, IsDate, IsMongoId, IsBoolean, IS_MONGO_ID, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { RewardType, RewardHistoryStatus } from '../schemas/reward.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { RewardHistoryStatus, RewardType } from '../common/constants/enums';
 
 export class CreateRewardDto {
   @ApiProperty({ description: '이벤트 ID', required: false, example: '60b8d295f1d2e2001c8b4567' })

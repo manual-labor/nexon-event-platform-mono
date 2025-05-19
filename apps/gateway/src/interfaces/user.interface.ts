@@ -5,6 +5,13 @@ export enum UserRole {
   ADMIN = 'ADMIN',
 }
 
+export enum UserProvider {
+  KAKAO = 'KAKAO',
+  LOCAL = 'LOCAL',
+  GOOGLE = 'GOOGLE',
+  NAVER = 'NAVER',
+}
+
 export interface User {
   id: string;
   nickname: string;
