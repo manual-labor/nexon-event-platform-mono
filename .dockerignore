@@ -1,0 +1,9 @@
+# 개발 환경 파일
+node_modules
+.git
+.nx
+dist
+apps/*/node_modules
+apps/*/dist
+tmp
+coverage
