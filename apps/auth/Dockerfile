@@ -3,7 +3,7 @@ FROM --platform=${BUILDPLATFORM:-linux/amd64} node:18-alpine AS builder
 WORKDIR /workspace
 
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm fetch
+RUN npm install -g pnpm nx && pnpm fetch
 
 COPY apps/auth/package.json apps/auth/
 RUN pnpm install --frozen-lockfile --filter "@nexon-event-platform-mono/auth...*"
