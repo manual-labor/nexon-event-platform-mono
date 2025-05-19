@@ -205,8 +205,6 @@ export class EventsService {
       $project: {
         userId: 1,
         eventId: 1,
-        createdAt: 1,
-        updatedAt: 1,
         claimed: 1,
         claimedAt: 1,
         reward: {
@@ -215,8 +213,6 @@ export class EventsService {
           type: '$rewardDetails.type',
           quantity: '$rewardDetails.quantity',
           description: '$rewardDetails.description',
-          createdAt: '$rewardDetails.createdAt',
-          updatedAt: '$rewardDetails.updatedAt',
         },
         eventTitle: '$eventDetails.title',
       },
@@ -233,8 +229,6 @@ export class EventsService {
             rewardId: '$reward.id',
             claimed: '$claimed',
             claimedAt: '$claimedAt',
-            createdAt: '$createdAt',
-            updatedAt: '$updatedAt',
             rewardDetails: '$reward',
           },
         },
@@ -256,8 +250,6 @@ export class EventsService {
               rewardId: { $toString: '$$r.rewardId' },
               claimed: '$$r.claimed',
               claimedAt: '$$r.claimedAt',
-              createdAt: '$$r.createdAt',
-              updatedAt: '$$r.updatedAt',
               rewardDetails: {
                 id: { $toString: '$$r.rewardDetails.id' },
                 eventId: { $toString: '$$r.rewardDetails.eventId' },
@@ -265,8 +257,6 @@ export class EventsService {
                 type: '$$r.rewardDetails.type',
                 quantity: '$$r.rewardDetails.quantity',
                 description: '$$r.rewardDetails.description',
-                createdAt: '$$r.rewardDetails.createdAt',
-                updatedAt: '$$r.rewardDetails.updatedAt',
               },
             },
           },
@@ -307,6 +297,8 @@ export class EventsService {
   }
 
   private mapEventToDto(event: EventDocumentWithTimestamps): EventResponseDto {
+    const { condition, ...eventData } = event.toObject();
+    
     return {
       id: event.id,
       title: event.title,
@@ -314,9 +306,11 @@ export class EventsService {
       status: event.status,
       startDate: event.startDate,
       endDate: event.endDate,
-      condition: event.condition,
-      createdAt: event.createdAt,
-      updatedAt: event.updatedAt,
+      condition: condition ? {
+        type: condition.type,
+        value: condition.value,
+        description: condition.description
+      } : undefined
     };
   }
 
@@ -328,8 +322,6 @@ export class EventsService {
       type: reward.type,
       quantity: reward.quantity,
       description: reward.description,
-      createdAt: reward.createdAt,
-      updatedAt: reward.updatedAt,
     };
   }
 

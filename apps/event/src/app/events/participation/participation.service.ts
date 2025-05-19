@@ -235,8 +235,6 @@ export class ParticipationService {
       type: reward.type,
       quantity: reward.quantity,
       description: reward.description,
-      createdAt: reward.createdAt,
-      updatedAt: reward.updatedAt,
     };
   }
 
@@ -244,7 +242,6 @@ export class ParticipationService {
     return {
       inviterId: friend.inviterId.toString(),
       inviterEmail: friend.inviterEmail.toString(),
-      createdAt: friend.createdAt,
     };
   }
 
@@ -254,7 +251,6 @@ export class ParticipationService {
       userId: attendance.userId.toString(),
       attendanceDate: attendance.attendanceDate,
       consecutiveDays: attendance.consecutiveDays,
-      createdAt: attendance.createdAt,
     };
   }
 }

@@ -19,5 +19,5 @@ export class FriendInviteResponseDto {
   inviteeId?: string;
 
   @IsDate()
-  createdAt!: Date;
+  createdAt?: Date;
 } 

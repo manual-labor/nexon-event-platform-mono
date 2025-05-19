@@ -63,10 +63,12 @@ export class RewardResponseDto {
   description?: string;
 
   @IsDate()
-  createdAt!: Date;
+  @IsOptional()
+  createdAt?: Date;
 
   @IsDate()
-  updatedAt!: Date;
+  @IsOptional()
+  updatedAt?: Date;
 }
 
 export class RequestRewardDto {
@@ -100,10 +102,12 @@ export class RewardHistoryResponseDto {
   claimedAt!: Date;
 
   @IsDate()
-  createdAt!: Date;
+  @IsOptional()
+  createdAt?: Date;
 
   @IsDate()
-  updatedAt!: Date;
+  @IsOptional()
+  updatedAt?: Date;
 
   @IsOptional()
   rewardDetails?: RewardResponseDto;

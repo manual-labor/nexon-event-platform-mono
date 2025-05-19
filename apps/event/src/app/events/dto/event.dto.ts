@@ -15,6 +15,14 @@ export class EventConditionDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsDate()
+  @IsOptional()
+  createdAt?: Date;
+
+  @IsDate()
+  @IsOptional()
+  updatedAt?: Date;
 }
 
 export class CreateEventDto {
@@ -107,10 +115,12 @@ export class EventResponseDto {
   rewards?: RewardResponseDto[];
   
   @IsDate()
-  createdAt!: Date;
+  @IsOptional()
+  createdAt?: Date;
   
   @IsDate()
-  updatedAt!: Date;
+  @IsOptional()
+  updatedAt?: Date;
 }
 
 

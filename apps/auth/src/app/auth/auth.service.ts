@@ -120,8 +120,6 @@ export class AuthService {
       role: user.role,
       provider: user.provider,
       lastLogin: user.lastLogin,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt
     }));
   }
 

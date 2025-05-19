@@ -14,5 +14,5 @@ export class AttendanceResponseDto {
   consecutiveDays!: number;
 
   @IsDate()
-  createdAt!: Date;
+  createdAt?: Date;
 } 
