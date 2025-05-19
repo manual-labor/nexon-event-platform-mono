@@ -60,15 +60,16 @@ export class AuthController {
   async getProfile(@Request() req: { user: RequestUser }) {
     return this.rpcClientProxyService.send(
       this.authClient,
-      { cmd: 'get-user-profile' }, 
-      { userId: req.user.id, user: req.user }
+      { cmd: 'get-my-profile' },
+      { userId: req.user.id }
     );
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
   @Get('profile/:id')
-  @ApiOperation({ summary: '특정 사용자 프로필 조회 (관리자/운영자 권한 필요할 수 있음)' })
+  @ApiOperation({ summary: '특정 사용자 프로필 조회 (관리자/운영자 권한)' })
   @ApiResponse({ status: 200, description: '사용자 프로필 조회 성공', type: UserResponseDto })
   @ApiResponse({ status: 401, description: '인증되지 않은 사용자' })
   @ApiResponse({ status: 403, description: '권한 없음' })
@@ -76,7 +77,7 @@ export class AuthController {
   async getUserProfile(@Param('id') userId: string, @Request() req: { user: RequestUser }) {
     return this.rpcClientProxyService.send(
       this.authClient,
-      { cmd: 'get-user-profile' }, 
+      { cmd: 'get-user-profile' },
       { userId, user: req.user }
     );
   }

@@ -24,6 +24,11 @@ export class AuthController {
     return this.authService.validateToken(data.token);
   }
 
+  @MessagePattern({ cmd: 'get-my-profile' })
+  async getMyProfile(data: { userId: string }): Promise<UserResponseDto> {
+    return this.authService.getUserProfile(data.userId);
+  }
+
   @MessagePattern({ cmd: 'get-user-profile' })
   async getUserProfile(data: { userId: string }): Promise<UserResponseDto> {
     return this.authService.getUserProfile(data.userId);

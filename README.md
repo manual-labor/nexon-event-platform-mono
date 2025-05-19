@@ -148,11 +148,11 @@ pnpm을 사용하여 각 서비스를 개별적으로 빌드할 수 있습니다
     | 이벤트 보상 목록 조회         | `GET`       | `/v1/event/:eventId/rewards`                  | USER  |
     | 보상 수령 내역 상태 수정      | `PATCH`     | `/v1/event/rewards/history/:historyId/status` | ADMIN, OPERATOR|
     | 보상 수령 내역 조회           | `GET`       | `/v1/event/rewards/history`                   | USER<sup>\*</sup> |
-    | 친구 초대                     | `POST`      | `/v1/event/participation/invite-friends`      | User, ADMIN    |
-    | 출석 체크                     | `POST`      | `/v1/event/participation/check-attendance`    | User, ADMIN    |
-    | 이벤트 보상 요청              | `POST`      | `/v1/event/participation/:eventId/rewards/:rewardId/claim` | User, ADMIN    |
+    | 친구 초대                     | `POST`      | `/v1/event/participation/invite-friends`      | USER, ADMIN    |
+    | 출석 체크                     | `POST`      | `/v1/event/participation/check-attendance`    | USER, ADMIN    |
+    | 이벤트 보상 요청              | `POST`      | `/v1/event/participation/:eventId/rewards/:rewardId/claim` | USER, ADMIN    |
 
-    <sup>\*</sup> 일반 사용자는 자신의 내역만 조회 가능. ADMIN/OPERATOR/Auditor는 `userId` 쿼리 파라미터를 통해 특정 사용자의 내역 조회 가능.
+    <sup>\*</sup> 일반 사용자는 자신의 내역만 조회 가능. ADMIN/OPERATOR/AUDITOR는 `userId` 쿼리 파라미터를 통해 특정 사용자의 내역 조회 가능.
 
 *각 서비스의 구체적인 API 명세는 해당 서비스의 Swagger 문서를 참고해주시면 됩니다.*
 
