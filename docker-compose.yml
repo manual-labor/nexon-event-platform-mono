@@ -7,7 +7,6 @@ services:
       - --replSet
       - rs0
       - --bind_ip_all
-      - --enableMajorityReadConcern=false
     ports:
       - "${MONGO_PORT:-27017}:27017"
     volumes:
