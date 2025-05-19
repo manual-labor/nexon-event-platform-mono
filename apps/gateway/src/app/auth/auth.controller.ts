@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Request, UseGuards, Put } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Roles } from '../decorators/roles.decorator';
@@ -9,6 +9,8 @@ import { Public } from '../decorators/public.decorator';
 import { RpcClientProxyService } from '../services/rpc-client-proxy.service';
 import { LoginDto, RegisterDto, TokenDto } from '../dto/auth.dto';
 import { RequestUser } from '../interfaces/request-user.interface';
+import { UpdateRoleDto } from '../dto/update-role.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -65,6 +67,47 @@ export class AuthController {
       this.authClient,
       { cmd: 'get-users' }, 
       { user: req.user }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Get('users/by-email/:email')
+  async getUserByEmail(@Param('email') email: string, @Request() req: { user: RequestUser }) {
+    return this.rpcClientProxyService.send(
+      this.authClient,
+      { cmd: 'get-user-by-email' }, 
+      { email, user: req.user }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('users/:id')
+  async updateUser(
+    @Param('id') id: string, 
+    @Body() updateUserDto: UpdateUserDto,
+    @Request() req: { user: RequestUser }
+  ) {
+    return this.rpcClientProxyService.send(
+      this.authClient,
+      { cmd: 'update-user' }, 
+      { id, ...updateUserDto, user: req.user }
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  // 테스트를 위해 아래 주석처리, 첫 계정 생성 후 활성화 필요
+  // @Roles(UserRole.ADMIN)
+  @Put('users/:id/role')
+  async updateUserRole(
+    @Param('id') id: string, 
+    @Body() updateRoleDto: UpdateRoleDto,
+    @Request() req: { user: RequestUser }
+  ) {
+    return this.rpcClientProxyService.send(
+      this.authClient,
+      { cmd: 'update-user-role' }, 
+      { id, role: updateRoleDto.role, user: req.user }
     );
   }
 

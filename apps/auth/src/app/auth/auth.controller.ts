@@ -3,6 +3,7 @@ import { MessagePattern } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { LoginDto, UserResponseDto, AuthResponseDto, TokenValidationDto, TokenValidationResponseDto } from '../users/dto/user.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UserRole } from '../interfaces/user.interface';
 
 @Controller()
 export class AuthController {
@@ -43,6 +44,12 @@ export class AuthController {
   async updateUser(data: { id: string, name: string, email: string, role: string }): Promise<{ user: UserResponseDto }> {
     const user = await this.authService.getUserProfile(data.id);
     return { user };
+  }
+
+  @MessagePattern({ cmd: 'update-user-role' })
+  async updateUserRole(data: { id: string, role: UserRole, user?: any }): Promise<{ user: UserResponseDto }> {
+    const updatedUser = await this.authService.updateUserRole(data.id, data.role, data.user?.id);
+    return { user: updatedUser };
   }
 
   @MessagePattern({ cmd: 'get-user-by-email' })

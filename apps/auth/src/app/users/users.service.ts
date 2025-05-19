@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User } from './schemas/users.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRole } from '../interfaces/user.interface';
 
 @Injectable()
 export class UsersService {
@@ -42,12 +43,14 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    const { role, ...updateData } = updateUserDto;
+    
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
     }
 
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .findByIdAndUpdate(id, updateData, { new: true })
       .exec();
 
     if (!updatedUser) {
@@ -75,5 +78,21 @@ export class UsersService {
       throw new NotFoundException(`사용자 ID ${id}를 찾을 수 없습니다`);
     }
     return deletedUser;
+  }
+
+  async updateUserRole(id: string, role: UserRole, adminId?: string): Promise<User> {
+    if (!Object.values(UserRole).includes(role)) {
+      throw new ForbiddenException('유효하지 않은 역할입니다.');
+    }
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(id, { role }, { new: true })
+      .exec();
+
+    if (!updatedUser) {
+      throw new NotFoundException(`사용자 ID ${id}를 찾을 수 없습니다`);
+    }
+
+    return updatedUser;
   }
 }

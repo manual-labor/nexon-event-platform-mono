@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, NotFoundException, Query, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
 import { User } from './schemas/users.schema';
+import { UserRole } from '../interfaces/user.interface';
 
 @Controller('users')
 export class UsersController {
@@ -35,6 +37,14 @@ export class UsersController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.usersService.update(id, updateUserDto);
+  }
+
+  @Put(':id/role')
+  async updateUserRole(
+    @Param('id') id: string, 
+    @Body() updateRoleDto: UpdateRoleDto,
+  ): Promise<User> {
+    return this.usersService.updateUserRole(id, updateRoleDto.role);
   }
 
   @Delete(':id')

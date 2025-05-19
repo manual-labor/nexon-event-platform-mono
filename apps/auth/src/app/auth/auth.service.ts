@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { LoginDto, AuthResponseDto, TokenValidationResponseDto, UserResponseDto } from '../users/dto/user.dto';
 import { User } from '../users/schemas/users.schema';
-import { UserProvider } from '../interfaces/user.interface';
+import { UserProvider, UserRole } from '../interfaces/user.interface';
 import {
   InvalidCredentialsException,
   PasswordRequiredException,
@@ -136,6 +136,19 @@ export class AuthService {
       role: user.role,
       provider: user.provider,
       lastLogin: user.lastLogin,
+    };
+  }
+
+  async updateUserRole(userId: string, role: UserRole, adminId?: string): Promise<UserResponseDto> {
+    const updatedUser = await this.usersService.updateUserRole(userId, role, adminId);
+    
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      nickname: updatedUser.nickname,
+      role: updatedUser.role,
+      provider: updatedUser.provider,
+      lastLogin: updatedUser.lastLogin,
     };
   }
 } 
