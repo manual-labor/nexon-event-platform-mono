@@ -172,10 +172,11 @@ pnpm을 사용하여 각 서비스를 개별적으로 빌드할 수 있습니다
 **유저 참여:**
 1. GET /v1/event 으로 진행 중인 이벤트 하나를 고른다.
     - 현재 구현 : 연속 로그인(CONSECUTIVE_ATTENDANCE), 친구 추가(INVITE_FRIEND)
-2. POST /v1/event/participation/invite-friends 으로 친구를 추가한다
+2. POST /v1/event/participation/invite-friends 으로 게임으로 초대한 친구의 email을 입력한다.
     - 가입한 유저가 추천을 한 유저의 이메일을 작성하는 구조
-3. 초대를 받은 유저는 이벤트 조건이 만족되면 POST /v1/event/participation/:eventId/rewards/:rewardId/claim 으로 보상을 요청한다.
+3. 초대를 했던 유저는 이벤트 조건이 만족되면 POST /v1/event/participation/:eventId/rewards/:rewardId/claim 으로 보상을 요청한다.
 
-4. 게임 서버와 연동(구현 필요) 후 게임서버에서 PATCH /v1/event/rewards/history/:historyId/status 를 통해 보상을 확정하거나 취소한다.
+4. 운영자가 확인 후 PATCH /v1/event/rewards/history/:historyId/status 를 통해 보상을 확정하거나 취소한다.
+    - 게임 서버 혹은 쿠폰 서버와 연동 후 실제 아이템을 지급하는 로직 구현 필요
    
 
