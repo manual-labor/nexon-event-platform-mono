@@ -27,7 +27,7 @@ export class EventCondition {
   description!: string;
 }
 
-const EventConditionSchema = SchemaFactory.createForClass(EventCondition);
+export const EventConditionSchema = SchemaFactory.createForClass(EventCondition);
 EventConditionSchema.set('_id', false);
 
 @Schema({ timestamps: true })
@@ -57,4 +57,12 @@ export class Event {
   updatedBy!: string;
 }
 
-export const EventSchema = SchemaFactory.createForClass(Event);export type EventDocument = Event & Document;
+export const EventSchema = SchemaFactory.createForClass(Event);
+
+
+EventSchema.index({ status: 1 });
+EventSchema.index({ createdAt: -1 });
+EventSchema.index({ startDate: 1 });
+EventSchema.index({ endDate: 1 });
+
+export type EventDocument = Event & Document;

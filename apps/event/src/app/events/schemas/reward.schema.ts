@@ -66,3 +66,16 @@ export type RewardDocument = Reward & Document;
 
 export const RewardHistorySchema = SchemaFactory.createForClass(RewardHistory);
 export type RewardHistoryDocument = RewardHistory & Document;
+
+
+RewardHistorySchema.index({ userId: 1 });
+RewardHistorySchema.index({ eventId: 1 });
+RewardHistorySchema.index({ rewardId: 1 });
+RewardHistorySchema.index({ status: 1 });
+RewardHistorySchema.index({ createdAt: -1 });
+RewardHistorySchema.index({ userId: 1, eventId: 1 }); 
+RewardHistorySchema.index({ userId: 1, status: 1 }); 
+
+
+RewardSchema.index({ eventId: 1 });
+RewardSchema.index({ type: 1 });

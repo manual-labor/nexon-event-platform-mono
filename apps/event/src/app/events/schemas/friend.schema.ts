@@ -17,4 +17,12 @@ export class Friend {
 }
 
 export const FriendSchema = SchemaFactory.createForClass(Friend);
+
+FriendSchema.index({ inviterId: 1 });
+FriendSchema.index({ inviteeId: 1 });
+FriendSchema.index({ inviterEmail: 1 });
+FriendSchema.index({ inviteeEmail: 1 });
+FriendSchema.index({ inviterId: 1, inviteeId: 1 }, { unique: true }); 
+FriendSchema.index({ createdAt: -1 }); 
+
 export type FriendDocument = Friend & Document; 

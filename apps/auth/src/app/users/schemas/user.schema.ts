@@ -29,4 +29,9 @@ export class User extends Document {
   lastLogin!: Date;
 }
 
-export const UserSchema = SchemaFactory.createForClass(User); 
+export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.index({ provider: 1 });
+UserSchema.index({ createdAt: -1 });
+
+export type UserDocument = User & Document; 

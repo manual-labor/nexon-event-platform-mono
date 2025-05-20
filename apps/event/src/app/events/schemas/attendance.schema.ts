@@ -14,4 +14,10 @@ export class Attendance {
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);
+
+AttendanceSchema.index({ userId: 1 });
+AttendanceSchema.index({ attendanceDate: -1 });
+AttendanceSchema.index({ userId: 1, attendanceDate: -1 }, { unique: true });
+AttendanceSchema.index({ consecutiveDays: -1 });
+
 export type AttendanceDocument = Attendance & Document; 
