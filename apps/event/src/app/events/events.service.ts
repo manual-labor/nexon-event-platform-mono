@@ -75,7 +75,10 @@ export class EventsService {
   async getEventDetail(eventId: string): Promise<EventResponseDto> {
     const event = await this.findEventById(eventId);
     const rewards = await this.rewardModel.find({ eventId: eventId }).exec();
-    return this.mapEventToDto({ ...event.toObject(), rewards });
+    const eventObj = event instanceof Document && typeof event.toObject === 'function' 
+      ? event.toObject() 
+      : event;
+    return this.mapEventToDto({ ...eventObj, rewards });
   }
   
   async createEvent(eventData: CreateEventDto, operatorId: string): Promise<EventResponseDto> {
@@ -335,7 +338,11 @@ export class EventsService {
   }
 
   private mapEventToDto(event: EventDocumentWithTimestamps): EventResponseDto {
-    const { condition, ...eventData } = event.toObject();
+    const eventObj = event instanceof Document && typeof event.toObject === 'function' 
+      ? event.toObject() 
+      : event;
+      
+    const { condition, ...eventData } = eventObj;
     
     return {
       eventId: event.id,
