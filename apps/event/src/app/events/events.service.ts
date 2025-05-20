@@ -44,6 +44,20 @@ type RewardDocumentWithTimestamps = RewardDocument & BaseDocument;
 type FriendDocumentWithTimestamps = FriendDocument & BaseDocument;
 type AttendanceDocumentWithTimestamps = AttendanceDocument & BaseDocument;
 
+// 보상 객체 타입 정의
+type RewardObjectType = {
+  id?: Types.ObjectId | string;
+  _id?: Types.ObjectId | string;
+  eventId?: string | Types.ObjectId;
+  name: string;
+  type: RewardType;
+  quantity: number;
+  description?: string;
+  unitValue?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
 @Injectable()
 export class EventsService {
   constructor(
@@ -334,50 +348,71 @@ export class EventsService {
     return history;
   }
 
-  private mapEventToDto(event: EventDocumentWithTimestamps & { rewards?: RewardDocumentWithTimestamps[] }): EventResponseDto {
-    const { condition, rewards: eventRewards, ...eventData } = event.toObject ? event.toObject() : event;
+  private mapEventToDto(event: EventDocumentWithTimestamps & { rewards?: Array<RewardDocumentWithTimestamps | RewardObjectType | RewardResponseDto> }): EventResponseDto {
+    const eventData = event.toObject ? event.toObject() : event;
+    const { condition, rewards: eventRewards, ...restData } = eventData;
     
-    const mappedRewards = eventRewards
-      ? eventRewards.map(reward => this.mapRewardToDto(reward as RewardDocumentWithTimestamps))
-      : (event as any).rewards // In case rewards is already an array of plain objects
-        ? (event as any).rewards.map((r: any) => this.mapRewardToDto(r as RewardDocumentWithTimestamps))
-        : undefined;
+    // 보상 정보 매핑
+    let rewards: RewardResponseDto[] | undefined;
+    if (eventRewards && Array.isArray(eventRewards)) {
+      rewards = eventRewards.map(reward => this.mapRewardToDto(reward));
+    } else if (event.rewards && Array.isArray(event.rewards)) {
+      rewards = event.rewards.map(reward => this.mapRewardToDto(reward));
+    }
 
+    // 이벤트 응답 DTO 반환
     return {
-      eventId: event.id || (eventData as any)._id?.toString(),
-      title: event.title || eventData.title,
-      description: event.description || eventData.description,
-      status: event.status || eventData.status,
-      startDate: event.startDate || eventData.startDate,
-      endDate: event.endDate || eventData.endDate,
+      eventId: (eventData._id?.toString() || event.id?.toString()) as string,
+      title: eventData.title,
+      description: eventData.description,
+      status: eventData.status,
+      startDate: eventData.startDate,
+      endDate: eventData.endDate,
       condition: condition ? {
         type: condition.type,
         value: condition.value,
         description: condition.description
-      } : (eventData.condition ? eventData.condition : undefined),
-      rewards: mappedRewards,
-      createdAt: event.createdAt || eventData.createdAt,
-      updatedAt: event.updatedAt || eventData.updatedAt,
+      } : undefined,
+      rewards,
+      createdAt: eventData.createdAt,
+      updatedAt: eventData.updatedAt,
     };
   }
 
-  private mapRewardToDto(reward: RewardDocumentWithTimestamps | RewardResponseDto): RewardResponseDto {
-    // Check if it's already a DTO to prevent re-mapping if rewards are passed pre-mapped
+  private mapRewardToDto(reward: RewardDocumentWithTimestamps | RewardObjectType | RewardResponseDto): RewardResponseDto {
+
     if (reward && 'rewardId' in reward && typeof reward.rewardId === 'string') {
       return reward as RewardResponseDto;
     }
 
-    const rewardDoc = reward as RewardDocumentWithTimestamps;
+    // ID 처리 (Mongoose 객체 또는 일반 객체)
+    let rewardId: string;
+    let eventId: string | undefined;
+
+    if ('id' in reward && reward.id) {
+      rewardId = reward.id.toString();
+    } else if ('_id' in reward && reward._id) {
+      rewardId = reward._id.toString();
+    } else {
+      rewardId = ''; // 기본값 설정
+    }
+
+    if ('eventId' in reward && reward.eventId) {
+      eventId = typeof reward.eventId === 'object'
+        ? reward.eventId.toString()
+        : reward.eventId.toString();
+    }
+
     return {
-      rewardId: rewardDoc.id?.toString() || (rewardDoc as any)._id?.toString(),
-      eventId: rewardDoc.eventId?.toString(),
-      name: rewardDoc.name,
-      type: rewardDoc.type,
-      quantity: rewardDoc.quantity,
-      description: rewardDoc.description,
-      unitValue: rewardDoc.unitValue,
-      createdAt: rewardDoc.createdAt,
-      updatedAt: rewardDoc.updatedAt,
+      rewardId,
+      eventId: eventId || '',
+      name: reward.name,
+      type: reward.type,
+      quantity: reward.quantity,
+      description: reward.description,
+      unitValue: reward.unitValue,
+      createdAt: reward.createdAt,
+      updatedAt: reward.updatedAt,
     };
   }
 
