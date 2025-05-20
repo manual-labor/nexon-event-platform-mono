@@ -49,6 +49,8 @@ JWT_SECRET="your-super-secret-jwt-key" # 예시, 실제 서비스에서 변경 �
 
 # API Gateway 서비스 (gateway_service)
 GATEWAY_PORT=3000
+GATEWAY_URL=http://gateway_service:3000/v1
+
 AUTH_SERVICE_HOST=auth_service # Docker 내부 호스트명, 로컬 실행 시 localhost 등
 AUTH_SERVICE_PORT=3001
 EVENT_SERVICE_HOST=event_service # Docker 내부 호스트명, 로컬 실행 시 localhost 등

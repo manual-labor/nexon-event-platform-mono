@@ -11,12 +11,16 @@ import {
   EventPeriodException,
   RewardAlreadyClaimedException,
   UserNotFoundException,
-  ServiceCommunicationException
 } from '../../common/exceptions/app-exception';
 import { FriendInviteRequestDto, FriendInviteResponseDto } from '../dto/friend.dto';
 import { AttendanceResponseDto } from '../dto/attendance.dto';
 import { RewardResponseDto, RequestRewardDto, RewardHistoryResponseDto } from '../dto/reward.dto';
-import { AuthClientService } from '../../gateway-client/auth-client.service';
+import {
+  getNowUtcDate,
+  parseToUTCDate,
+  getStartOfDayKst, // KST 기준으로 하루의 시작
+} from '../../utils/date.util';
+import { AuthClientService } from '../../internal-service/auth-gateway-client.service';
 
 interface BaseDocument extends Document {
   _id: Types.ObjectId;
@@ -57,6 +61,10 @@ export class ParticipationService {
     
     const inviter = await this.authClientService.getUserByEmail(inviteData.inviterEmail);
     
+    if (!inviter) {
+      throw new UserNotFoundException("초대자를 찾을 수 없습니다.");
+    }
+    
     const newInvite = new this.friendModel({
       inviterId: inviter.id,
       inviterEmail: inviteData.inviterEmail,
@@ -70,14 +78,15 @@ export class ParticipationService {
 
   // 출석 체크
   async checkAttendance(userId: string): Promise<AttendanceResponseDto> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // 출석일은 KST 기준으로 하루의 시작으로 기록합니다.
+    const todayKstStart = getStartOfDayKst(); 
+    const tomorrowKstStart = getStartOfDayKst(new Date(todayKstStart.getTime() + 24 * 60 * 60 * 1000));
     
     const existingAttendance = await this.attendanceModel.findOne({
       userId,
       attendanceDate: {
-        $gte: today,
-        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        $gte: todayKstStart,
+        $lt: tomorrowKstStart,
       },
     }).exec();
     
@@ -85,17 +94,15 @@ export class ParticipationService {
       throw new ConflictException('오늘은 이미 출석했습니다.');
     }
     
-    // 어제 출석했는지 확인하여 연속 출석 일수 계산
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayKstStart = getStartOfDayKst(new Date(todayKstStart.getTime() - 24 * 60 * 60 * 1000));
     
     const yesterdayAttendance = await this.attendanceModel.findOne({
       userId,
       attendanceDate: {
-        $gte: yesterday,
-        $lt: today,
+        $gte: yesterdayKstStart, 
+        $lt: todayKstStart, 
       },
-    }).sort({ createdAt: -1 }).exec();
+    }).sort({ createdAt: -1 }).exec(); // createdAt은 UTC
     
     let consecutiveDays = 1;
     if (yesterdayAttendance) {
@@ -104,7 +111,7 @@ export class ParticipationService {
     
     const savedAttendance = await new this.attendanceModel({
       userId,
-      attendanceDate: today,
+      attendanceDate: todayKstStart,
       consecutiveDays,
     }).save();
 
@@ -122,8 +129,11 @@ export class ParticipationService {
       throw new EventInactiveException('진행 중인 이벤트가 아닙니다.');
     }
     
-    const now = new Date();
-    if (now < event.startDate || now > event.endDate) {
+    const nowUtc = getNowUtcDate();
+    const startDateUtc = parseToUTCDate(event.startDate);
+    const endDateUtc = parseToUTCDate(event.endDate);
+    
+    if (nowUtc.getTime() < startDateUtc.getTime() || nowUtc.getTime() > endDateUtc.getTime()) {
       throw new EventPeriodException('이벤트 기간이 아닙니다.');
     }
     
@@ -137,7 +147,6 @@ export class ParticipationService {
       throw new RewardAlreadyClaimedException('이미 보상을 요청했거나 지급받았습니다.');
     }
     
-    // 이벤트 조건을 충족했는지 확인
     await this.validateEventConditions(event, userId);
     
     const newRewardHistory = new this.rewardHistoryModel({
@@ -145,7 +154,7 @@ export class ParticipationService {
       eventId: new Types.ObjectId(eventId),
       rewardId: new Types.ObjectId(rewardId),
       status: RewardHistoryStatus.PENDING, 
-      rewardAt: null,
+      rewardAt: null, // UTC
     });
     
     const savedHistory = await newRewardHistory.save();
@@ -156,7 +165,7 @@ export class ParticipationService {
   // 이벤트 조건 검증
   private async validateEventConditions(event: EventDocumentWithTimestamps, userId: string): Promise<void> {
     if (!event.condition) {
-      return; // 조건이 없으면 검증 통과
+      return;
     }
 
     const condition = event.condition;
@@ -168,15 +177,13 @@ export class ParticipationService {
         await this.validateFriendInvites(userId, condition.value);
         break;
       default:
-        // 다른 조건 타입이 추가될 경우 여기에 구현
         break;
     }
   }
 
-  // 연속 출석 조건 검증
   private async validateConsecutiveAttendance(userId: string, requiredDays: number): Promise<void> {
     const latestAttendance = await this.attendanceModel.findOne({ userId })
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 }) // createdAt은 UTC
       .exec();
     
     if (!latestAttendance || latestAttendance.consecutiveDays < requiredDays) {
@@ -184,7 +191,6 @@ export class ParticipationService {
     }
   }
 
-  // 친구 초대 조건 검증
   private async validateFriendInvites(userId: string, requiredInvites: number): Promise<void> {
     const inviteCount = await this.friendModel.countDocuments({ inviterId: userId });
     
@@ -193,7 +199,6 @@ export class ParticipationService {
     }
   }
 
-  // Helper 메서드
   private async findEventById(eventId: string): Promise<EventDocumentWithTimestamps> {
     if (!Types.ObjectId.isValid(eventId)) {
       throw new BadRequestException('유효하지 않은 이벤트 ID입니다.');
@@ -243,12 +248,11 @@ export class ParticipationService {
     return {
       id: attendance._id.toString(),
       userId: attendance.userId.toString(),
-      attendanceDate: attendance.attendanceDate,
+      attendanceDate: attendance.attendanceDate, // UTC Date 객체
       consecutiveDays: attendance.consecutiveDays,
     };
   }
 
-  // RewardHistory를 DTO로 매핑하는 헬퍼 메서드
   private mapRewardHistoryToDto(history: RewardHistoryDocument & BaseDocument): RewardHistoryResponseDto {
     return {
       historyId: (history._id as Types.ObjectId).toString(),

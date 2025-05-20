@@ -4,10 +4,14 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app/app.module';
 import { GlobalExceptionFilter } from './app/filters/global-exception.filter';
+import { setTimezone } from './app/utils/date.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  // 타임존 설정 (기본값: Asia/Seoul)
+  setTimezone();
 
   const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,

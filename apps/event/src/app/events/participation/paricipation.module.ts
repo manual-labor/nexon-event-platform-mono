@@ -6,7 +6,7 @@ import { Event, EventSchema } from '../schemas/event.schema';
 import { Reward, RewardSchema, RewardHistory, RewardHistorySchema } from '../schemas/reward.schema';
 import { Friend, FriendSchema } from '../schemas/friend.schema';
 import { Attendance, AttendanceSchema } from '../schemas/attendance.schema';
-import { GatewayClientModule } from '../../gateway-client/gateway-client.module';
+import { InternalGatewayModule } from '../../internal-service/internal-gateway.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { GatewayClientModule } from '../../gateway-client/gateway-client.module'
       { name: Friend.name, schema: FriendSchema },
       { name: Attendance.name, schema: AttendanceSchema },
     ]),
-    GatewayClientModule,
+    InternalGatewayModule,
   ],
   controllers: [ParticipationController],
   providers: [ParticipationService],

@@ -4,6 +4,7 @@ import { AppModule } from './app/app.module';
 import { ConfigService } from '@nestjs/config';
 import { GlobalExceptionFilter } from './app/filters/global-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { setTimezone } from './app/utils/date.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -37,6 +38,9 @@ async function bootstrap() {
       },
     }),
   );
+  
+  // 타임존 설정 (기본값: Asia/Seoul)
+  setTimezone();
   
   const port = configService.get('PORT', 3000);
   await app.listen(port);

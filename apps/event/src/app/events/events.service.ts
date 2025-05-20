@@ -25,6 +25,13 @@ import {
 import { FriendInviteRequestDto, FriendInviteResponseDto } from './dto/friend.dto';
 import { AttendanceResponseDto } from './dto/attendance.dto';
 import { UserRole } from '../interfaces/user.interface';
+import { ConfigService } from '@nestjs/config';
+import {
+  parseToUTCDate,
+  getNowUtcDate,
+  formatDateKst,
+  getApplicationTimezone,
+} from '../utils/date.util';
 
 interface BaseDocument extends Document {
   id: Types.ObjectId;
@@ -372,8 +379,8 @@ export class EventsService {
   }
 
   private validateEventDateRange(startDateInput: Date | string, endDateInput: Date | string): void {
-    const startDate = startDateInput instanceof Date ? startDateInput : new Date(startDateInput);
-    const endDate = endDateInput instanceof Date ? endDateInput : new Date(endDateInput);
+    const startDate = parseToUTCDate(startDateInput);
+    const endDate = parseToUTCDate(endDateInput);
 
     if (startDate.getTime() >= endDate.getTime()) {
       throw new EventPeriodException('시작 시간은 마감 시간보다 앞서야 합니다.');
@@ -381,18 +388,18 @@ export class EventsService {
   }
 
   private getEventStatusFromDates(startDateInput: Date | string, endDateInput: Date | string): EventStatus {
-    const startDate = startDateInput instanceof Date ? startDateInput : new Date(startDateInput);
-    const endDate = endDateInput instanceof Date ? endDateInput : new Date(endDateInput);
+    const startDateUtc = parseToUTCDate(startDateInput);
+    const endDateUtc = parseToUTCDate(endDateInput);
+    const nowUtc = getNowUtcDate();
 
-    const nowTime: number = new Date().getTime();
-      if(endDate.getTime() <= nowTime) {
-        return EventStatus.ENDED;
-      }
+    if (endDateUtc.getTime() <= nowUtc.getTime()) {
+      return EventStatus.ENDED;
+    }
 
-      if(startDate.getTime() <= nowTime && nowTime <= endDate.getTime()) {
-        return EventStatus.ONGOING;
-      }
+    if (startDateUtc.getTime() <= nowUtc.getTime() && nowUtc.getTime() <= endDateUtc.getTime()) {
+      return EventStatus.ONGOING;
+    }
 
-     return EventStatus.UPCOMING;
+    return EventStatus.UPCOMING;
   }
 }

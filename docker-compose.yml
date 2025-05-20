@@ -85,6 +85,7 @@ services:
       - MONGODB_URI_AUTH=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/authdb?replicaSet=rs0
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - TIMEZONE=${TIMEZONE:-Asia/Seoul}
 
     env_file:
       - .env
@@ -108,6 +109,7 @@ services:
       - MONGODB_URI_EVENT=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/eventdb?replicaSet=rs0
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - TIMEZONE=${TIMEZONE:-Asia/Seoul}
 
     env_file:
       - .env
@@ -139,6 +141,7 @@ services:
       - EVENT_SERVICE_HOST=event_service
       - EVENT_SERVICE_PORT=${EVENT_PORT:-3002}
       - JWT_SECRET=${JWT_SECRET}
+      - TIMEZONE=${TIMEZONE:-Asia/Seoul}
     env_file:
       - .env
 

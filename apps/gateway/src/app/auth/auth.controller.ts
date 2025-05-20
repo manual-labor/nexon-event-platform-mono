@@ -2,13 +2,12 @@ import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Request,
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Roles } from '../decorators/roles.decorator';
-import { UserRole } from '../../interfaces/user.interface';
+import { RequestUser, UserRole } from '../../interfaces/user.interface';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Public } from '../decorators/public.decorator';
 import { RpcClientProxyService } from '../services/rpc-client-proxy.service';
 import { LoginDto, RegisterDto, TokenDto } from '../dto/auth/auth.dto';
-import { RequestUser } from '../interfaces/request-user.interface';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
