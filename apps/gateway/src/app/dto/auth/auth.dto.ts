@@ -35,7 +35,7 @@ export class RegisterDto {
   @MaxLength(30)
   nickname!: string;
 
-  @ApiProperty({ description: 'OAuth 제공자 (google, kakao 등)', example: 'google', required: false })
+  @ApiProperty({ description: 'OAuth 제공자 (google, kakao 등)', example: 'LOCAL', required: false })
   @IsString()
   @IsOptional()
   provider?: string;
