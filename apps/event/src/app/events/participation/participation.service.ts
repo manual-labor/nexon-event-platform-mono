@@ -20,7 +20,7 @@ import {
   parseToUTCDate,
   getStartOfDayKst, // KST 기준으로 하루의 시작
 } from '../../utils/date.util';
-import { AuthClientService } from '../../internal-service/auth-gateway-client.service';
+import { AuthGatewayClientService } from '../../internal-service/auth-gateway-client.service';
 
 interface BaseDocument extends Document {
   _id: Types.ObjectId;
@@ -41,7 +41,7 @@ export class ParticipationService {
     @InjectModel(RewardHistory.name) private rewardHistoryModel: Model<RewardHistoryDocument & BaseDocument>,
     @InjectModel(Friend.name) private friendModel: Model<FriendDocumentWithTimestamps>,
     @InjectModel(Attendance.name) private attendanceModel: Model<AttendanceDocumentWithTimestamps>,
-    private readonly authClientService: AuthClientService,
+    private readonly authGatewayClientService: AuthGatewayClientService,
   ) {}
 
   // 친구 초대
@@ -59,7 +59,7 @@ export class ParticipationService {
       throw new ConflictException('이미 초대를 받았던 이력이 있습니다.');
     }
     
-    const inviter = await this.authClientService.getUserByEmail(inviteData.inviterEmail);
+    const inviter = await this.authGatewayClientService.getUserByEmail(inviteData.inviterEmail);
     
     if (!inviter) {
       throw new UserNotFoundException("초대자를 찾을 수 없습니다.");

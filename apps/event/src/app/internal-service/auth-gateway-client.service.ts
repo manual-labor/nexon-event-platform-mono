@@ -2,17 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-
-export interface UserDto {
-  id: string;
-  nickname: string;
-  email: string;
-  role: string;
-}
+import { User } from '../interfaces/user.interface';
 
 
 @Injectable()
-export class AuthClientService {
+export class AuthGatewayClientService {
   private readonly gatewayUrl: string;
   private readonly apiKey: string;
 
@@ -24,7 +18,7 @@ export class AuthClientService {
     this.apiKey = this.configService.get<string>('INTERNAL_API_KEY', 'default-internal-api-key');
   }
 
-  async getUserByEmail(email: string): Promise<UserDto | null> {
+  async getUserByEmail(email: string): Promise<User | null> {
     try {
       const response = await firstValueFrom(
         this.httpService.get(`${this.gatewayUrl}/internal/users/by-email/${email}`, {
