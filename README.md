@@ -159,3 +159,23 @@ pnpm을 사용하여 각 서비스를 개별적으로 빌드할 수 있습니다
 
 *각 서비스의 구체적인 API 명세는 해당 서비스의 Swagger 문서를 참고해주시면 됩니다.*
 
+## QA 시나리오
+
+**계정 생성:**
+1. POST /v1/auth/register 으로 계정을 만든다.
+2. PUT /v1/auth/users/:id/role 으로 계정 권한을 수정한다. (테스트를 위해 유저도 사용할 수 있도록 만들었습니다. 추후 주석처리된 Guard를 활성화시키면 됩니다.)
+
+**이벤트 관리:**
+1. 운영자 이상 권한으로 POST /v1/event 으로 이벤트를 생성한다.
+2. POST /v1/event/:eventId/rewards 으로 이벤트 보상을 생성한다.
+
+**유저 참여:**
+1. GET /v1/event 으로 진행 중인 이벤트 하나를 고른다.
+    - 현재 구현 : 연속 로그인(CONSECUTIVE_ATTENDANCE), 친구 추가(INVITE_FRIEND)
+2. POST /v1/event/participation/invite-friends 으로 친구를 추가한다
+    - 가입한 유저가 추천을 한 유저의 이메일을 작성하는 구조
+3. 초대를 받은 유저는 이벤트 조건이 만족되면 POST /v1/event/participation/:eventId/rewards/:rewardId/claim 으로 보상을 요청한다.
+
+4. 게임 서버와 연동(구현 필요) 후 게임서버에서 PATCH /v1/event/rewards/history/:historyId/status 를 통해 보상을 확정하거나 취소한다.
+   
+
