@@ -334,35 +334,50 @@ export class EventsService {
     return history;
   }
 
-  private mapEventToDto(event: EventDocumentWithTimestamps): EventResponseDto {
-    const { condition, ...eventData } = event.toObject();
+  private mapEventToDto(event: EventDocumentWithTimestamps & { rewards?: RewardDocumentWithTimestamps[] }): EventResponseDto {
+    const { condition, rewards: eventRewards, ...eventData } = event.toObject ? event.toObject() : event;
     
+    const mappedRewards = eventRewards
+      ? eventRewards.map(reward => this.mapRewardToDto(reward as RewardDocumentWithTimestamps))
+      : (event as any).rewards // In case rewards is already an array of plain objects
+        ? (event as any).rewards.map((r: any) => this.mapRewardToDto(r as RewardDocumentWithTimestamps))
+        : undefined;
+
     return {
-      eventId: event.id,
-      title: event.title,
-      description: event.description,
-      status: event.status,
-      startDate: event.startDate,
-      endDate: event.endDate,
+      eventId: event.id || (eventData as any)._id?.toString(),
+      title: event.title || eventData.title,
+      description: event.description || eventData.description,
+      status: event.status || eventData.status,
+      startDate: event.startDate || eventData.startDate,
+      endDate: event.endDate || eventData.endDate,
       condition: condition ? {
         type: condition.type,
         value: condition.value,
         description: condition.description
-      } : undefined
+      } : (eventData.condition ? eventData.condition : undefined),
+      rewards: mappedRewards,
+      createdAt: event.createdAt || eventData.createdAt,
+      updatedAt: event.updatedAt || eventData.updatedAt,
     };
   }
 
-  private mapRewardToDto(reward: RewardDocumentWithTimestamps): RewardResponseDto {
+  private mapRewardToDto(reward: RewardDocumentWithTimestamps | RewardResponseDto): RewardResponseDto {
+    // Check if it's already a DTO to prevent re-mapping if rewards are passed pre-mapped
+    if (reward && 'rewardId' in reward && typeof reward.rewardId === 'string') {
+      return reward as RewardResponseDto;
+    }
+
+    const rewardDoc = reward as RewardDocumentWithTimestamps;
     return {
-      rewardId: reward.id.toString(),
-      eventId: reward.eventId.toString(),
-      name: reward.name,
-      type: reward.type,
-      quantity: reward.quantity,
-      description: reward.description,
-      unitValue: reward.unitValue,
-      createdAt: reward.createdAt,
-      updatedAt: reward.updatedAt,
+      rewardId: rewardDoc.id?.toString() || (rewardDoc as any)._id?.toString(),
+      eventId: rewardDoc.eventId?.toString(),
+      name: rewardDoc.name,
+      type: rewardDoc.type,
+      quantity: rewardDoc.quantity,
+      description: rewardDoc.description,
+      unitValue: rewardDoc.unitValue,
+      createdAt: rewardDoc.createdAt,
+      updatedAt: rewardDoc.updatedAt,
     };
   }
 
