@@ -133,6 +133,28 @@ export class RewardHistoryResponseDto {
   @IsMongoId()
   rewardId!: string;
 
+  @ApiProperty({ description: '보상 이름', example: '골드 주머니' })
+  @IsString()
+  name!: string;
+
+  @ApiProperty({ description: '보상 타입 (예: 쿠폰, 포인트 등)', example: 'POINT' })
+  @IsString()
+  type!: string;
+
+  @ApiProperty({ description: '보상 수량', type: Number, example: 100 })
+  @IsNumber()
+  quantity!: number;
+
+  @ApiProperty({ description: '보상 설명', required: false, example: '100 골드를 즉시 지급합니다.' })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @ApiProperty({ description: '단위 가치 (예: 포인트의 경우 1포인트의 현금 가치)', type: Number, required: false, example: 1 })
+  @IsNumber()
+  @IsOptional()
+  unitValue?: number;
+
   @ApiProperty({ description: '보상 지급 상태', enum: RewardHistoryStatus, example: RewardHistoryStatus.SUCCESS })
   @IsEnum(RewardHistoryStatus)
   status!: RewardHistoryStatus;

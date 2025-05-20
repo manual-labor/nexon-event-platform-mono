@@ -51,6 +51,21 @@ export class RewardHistory extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Reward', required: true })
   rewardId!: Types.ObjectId;
 
+  @Prop({ type: String, required: true })
+  name!: string;
+
+  @Prop({ type: String, required: true })
+  type!: string;
+
+  @Prop({ type: Number, required: true })
+  quantity!: number;
+
+  @Prop({ type: String, required: false })
+  description?: string;
+
+  @Prop({ type: Number, required: false })
+  unitValue?: number;
+
   @Prop({ type: String, enum: Object.values(RewardHistoryStatus), required: true, default: RewardHistoryStatus.PENDING })
   status!: RewardHistoryStatus;
 

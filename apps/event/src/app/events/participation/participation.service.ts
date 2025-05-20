@@ -153,6 +153,11 @@ export class ParticipationService {
       userId: new Types.ObjectId(userId),
       eventId: new Types.ObjectId(eventId),
       rewardId: new Types.ObjectId(rewardId),
+      name: reward.name,
+      type: reward.type,
+      quantity: reward.quantity,
+      description: reward.description,
+      unitValue: reward.unitValue,
       status: RewardHistoryStatus.PENDING, 
       rewardAt: null, // UTC
     });
@@ -259,6 +264,11 @@ export class ParticipationService {
       userId: (history.userId as Types.ObjectId).toString(),
       eventId: (history.eventId as Types.ObjectId).toString(),
       rewardId: (history.rewardId as Types.ObjectId).toString(),
+      name: history.name,
+      type: history.type,
+      quantity: history.quantity,
+      description: history.description,
+      unitValue: history.unitValue,
       status: history.status as RewardHistoryStatus,
       rewardAt: history.rewardAt,
       createdAt: history.createdAt,
