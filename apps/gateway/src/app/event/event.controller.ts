@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Request, UseGuards, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Request, UseGuards, Patch, Delete } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Roles } from '../decorators/roles.decorator';
@@ -266,6 +266,53 @@ export class EventController {
       { cmd: 'request-reward' },
       {
         requestData,
+        user: req.user
+      }
+    );
+  }
+
+  @Roles(UserRole.OPERATOR, UserRole.ADMIN)
+  @ApiOperation({ summary: '이벤트 삭제 (운영자/관리자)' })
+  @ApiResponse({ status: 200, description: '이벤트 삭제 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiResponse({ status: 403, description: '권한 없음' })
+  @ApiResponse({ status: 404, description: '이벤트를 찾을 수 없음' })
+  @ApiResponse({ status: 409, description: '이벤트에 연결된 보상 지급 내역이 있어 삭제할 수 없음' })
+  @Delete(':eventId')
+  async deleteEvent(
+    @Param('eventId') eventId: string,
+    @Request() req: { user: RequestUser }
+  ) {
+    return this.rpcClientProxyService.send(
+      this.eventClient,
+      { cmd: 'delete-event' },
+      {
+        id: eventId,
+        user: req.user
+      }
+    );
+  }
+
+  @Roles(UserRole.OPERATOR, UserRole.ADMIN)
+  @ApiOperation({ summary: '이벤트 보상 삭제 (운영자/관리자)' })
+  @ApiResponse({ status: 200, description: '보상 삭제 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiResponse({ status: 403, description: '권한 없음' })
+  @ApiResponse({ status: 404, description: '보상을 찾을 수 없음' })
+  @ApiResponse({ status: 409, description: '보상에 연결된 지급 내역이 있어 삭제할 수 없음' })
+  @Delete(':eventId/rewards/:rewardId')
+  async deleteReward(
+    @Param('eventId') eventId: string,
+    @Param('rewardId') rewardId: string,
+    @Request() req: { user: RequestUser }
+  ) {
+    return this.rpcClientProxyService.send(
+      this.eventClient,
+      { cmd: 'delete-reward' },
+      {
+        id: rewardId,
         user: req.user
       }
     );

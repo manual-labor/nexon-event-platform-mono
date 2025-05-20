@@ -303,6 +303,58 @@ export class EventsService {
     return raw as EventRewardHistoryResponseDto[];
   }
 
+  // 이벤트 삭제
+  async deleteEvent(eventId: string): Promise<{ success: boolean; message: string }> {
+    const event = await this.findEventById(eventId);
+    
+    // 이벤트에 연결된 보상 기록 확인
+    const rewardHistories = await this.rewardHistoryModel.find({ eventId: eventId }).exec();
+    if (rewardHistories.length > 0) {
+      throw new ConflictException('이 이벤트에 연결된 보상 지급 내역이 있어 삭제할 수 없습니다.');
+    }
+    
+    // 이벤트에 연결된 보상도 삭제
+    const rewards = await this.rewardModel.find({ eventId: eventId }).exec();
+    
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    
+    try {
+      // 먼저 이벤트에 연결된 모든 보상 삭제
+      if (rewards.length > 0) {
+        await this.rewardModel.deleteMany({ eventId: eventId }).session(session).exec();
+      }
+      
+      // 이벤트 삭제
+      await this.eventModel.findByIdAndDelete(eventId).session(session).exec();
+      
+      await session.commitTransaction();
+      session.endSession();
+      
+      return { success: true, message: '이벤트가 성공적으로 삭제되었습니다.' };
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  }
+  
+  // 보상 삭제
+  async deleteReward(rewardId: string): Promise<{ success: boolean; message: string }> {
+    const reward = await this.findRewardById(rewardId);
+    
+    // 이 보상에 연결된 지급 내역 확인
+    const rewardHistories = await this.rewardHistoryModel.find({ rewardId: rewardId }).exec();
+    if (rewardHistories.length > 0) {
+      throw new ConflictException('이 보상에 연결된 지급 내역이 있어 삭제할 수 없습니다.');
+    }
+    
+    // 보상 삭제
+    await this.rewardModel.findByIdAndDelete(rewardId).exec();
+    
+    return { success: true, message: '보상이 성공적으로 삭제되었습니다.' };
+  }
+
   private async findEventById(eventId: string): Promise<EventDocumentWithTimestamps> {
     if (!Types.ObjectId.isValid(eventId)) {
       throw new BadRequestException('유효하지 않은 이벤트 ID입니다.');

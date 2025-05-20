@@ -91,4 +91,28 @@ export class EventsController {
       data.eventId
     );
   }
+
+  @MessagePattern({ cmd: 'delete-event' })
+  async deleteEvent(@Payload() data: { 
+    id: string;
+    user: UserPayload 
+  }): Promise<{ success: boolean; message: string }> {
+    // ADMIN과 OPERATOR 역할 검증
+    if (![UserRole.ADMIN, UserRole.OPERATOR].includes(data.user.role as UserRole)) {
+      throw new Error('삭제 권한이 없습니다. 관리자 또는 운영자만 이벤트를 삭제할 수 있습니다.');
+    }
+    return this.eventsService.deleteEvent(data.id);
+  }
+
+  @MessagePattern({ cmd: 'delete-reward' })
+  async deleteReward(@Payload() data: { 
+    id: string;
+    user: UserPayload 
+  }): Promise<{ success: boolean; message: string }> {
+    // ADMIN과 OPERATOR 역할 검증
+    if (![UserRole.ADMIN, UserRole.OPERATOR].includes(data.user.role as UserRole)) {
+      throw new Error('삭제 권한이 없습니다. 관리자 또는 운영자만 보상을 삭제할 수 있습니다.');
+    }
+    return this.eventsService.deleteReward(data.id);
+  }
 }
