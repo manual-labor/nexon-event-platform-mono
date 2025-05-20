@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
-import { AuthClientService } from './auth-gateway-client.service';
+import { AuthGatewayClientService } from './auth-gateway-client.service';
 
 @Module({
   imports: [
     ConfigModule,
     HttpModule,
   ],
-  providers: [AuthClientService],
-  exports: [AuthClientService],
+  providers: [AuthGatewayClientService],
+  exports: [AuthGatewayClientService],
 })
 export class InternalGatewayModule {} 
